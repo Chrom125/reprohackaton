@@ -23,7 +23,11 @@ bowtie-build reference.fasta index_reference.fasta
 
 bowtie -p 4 -S index_reference.fasta GSE139659.fastq.gz | samtools sort -@ 4 > GSE139659.bam
 
+conda install -c bioconda subread
+
 # FeatureCounts 1.4.6-p3
+
+featureCounts --extraAttributes Name -t gene -g ID -F GTF -T <#CPUS> -a <GFF> -o counts.txt <BAM FILES>
 
 # DESeq2 version 1.16
 

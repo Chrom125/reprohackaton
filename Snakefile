@@ -4,7 +4,7 @@ samples = ["GSE139659"]
 
 rule all:
     input:
-        expand("{sample}_trimmed.fq", sample=samples)
+        expand("{sample}_counts.txt", sample=samples)
 
 rule trim:
     input:
@@ -27,12 +27,12 @@ rule mapping:
         bowtie -p 4 -S index_reference.fasta {input} | samtools sort -@ 4 > {output}
         """
 
-rule counting:
+rule featurecounts:
     input:
         "{sample}_aligned.bam"
     output:
-        "stats/{sample}.txt"
+        "{sample}_counts.txt"
     shell:
         """
-        featureCounts -a annotation.gtf -o {output} {input}
+        featureCounts --extraAttributes Name -t gene -g ID -F GTF -T 4 -a reference.gff -o {output} {input}
         """

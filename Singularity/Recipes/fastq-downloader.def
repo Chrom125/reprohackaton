@@ -3,17 +3,26 @@ From: ubuntu:22.04
 
 %post
     set -eux
+
+    # Updating package list and install wget + tar
     apt-get update 
     apt-get install -y wget tar
+
+    # Downloading the latest SRA Toolkit release from NCBI
     wget -O sratoolkit.tar.gz https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/current/sratoolkit.current-ubuntu64.tar.gz
+    
+    # Creating installation directory for the archive extraction
     mkdir -p /sratoolkit
     tar -xzf sratoolkit.tar.gz --strip-components=1 -C /sratoolkit
+
+    # Removing the archive
     rm sratoolkit.tar.gz
 
 %environment
+    # Adding the SRA Toolkit binaries to the PATH
     export PATH=/sratoolkit/bin:$PATH
 %runscript
     fasterq-dump --threads 4 --progress "$@"
 %labels
-    Author Maurel
+    Author MD
     Version v0.0.1 

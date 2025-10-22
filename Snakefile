@@ -12,7 +12,7 @@ rule trimming:
     output:
         "results/raw-data/{sample}_trimmed.fastq"
     container:
-        ""
+        "cutadapt.img"
     shell:
         """
         cutadapt -a {config[trimming][a]} -m {config[trimming][m]} -o {output} {input}

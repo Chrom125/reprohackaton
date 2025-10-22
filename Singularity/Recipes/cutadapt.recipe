@@ -6,7 +6,7 @@ From: ubuntu:24.04
     apt-get update && apt-get install -y python3 build-essential python3-dev wget && \
     rm -rf /var/lib/apt/lists/*
 
-    # Donwload and Install cutadapt-v.1.11
+    # Download and Install cutadapt-v.1.11
     cd /tmp
     wget -q https://files.pythonhosted.org/packages/47/bf/9045e90dac084a90aa2bb72c7d5aadefaea96a5776f445f5b5d9a7a2c78b/cutadapt-1.11.tar.gz
     tar -xzf cutadapt-1.11.tar.gz

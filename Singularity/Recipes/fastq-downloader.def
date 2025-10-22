@@ -1,0 +1,19 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%post
+    set -eux
+    apt-get update 
+    apt-get install -y wget tar
+    wget -O sratoolkit.tar.gz https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/current/sratoolkit.current-ubuntu64.tar.gz
+    mkdir -p /sratoolkit
+    tar -xzf sratoolkit.tar.gz --strip-components=1 -C /sratoolkit
+    rm sratoolkit.tar.gz
+
+%environment
+    export PATH=/sratoolkit/bin:$PATH
+%runscript
+    fasterq-dump --threads 4 --progress "$@"
+%labels
+    Author Maurel
+    Version v0.0.1 

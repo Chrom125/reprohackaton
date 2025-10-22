@@ -6,19 +6,21 @@ rule all:
     input:
         expand("{sample}_counts.txt", sample=samples)
 
-rule trim:
+rule trimming:
     input:
-        "{sample}.fastq"
+        "results/trimming/{sample}.fastq"
     output:
-        "{sample}_trimmed.fq"
+        "results/raw-data/{sample}_trimmed.fastq"
+    container:
+        ""
     shell:
         """
-        trim_galore -q {config[trim][q]} --phred33 --length {config[trim][length]} {input}
+        cutadapt -a {config[trimming][a]} -m {config[trimming][m]} -o {output} {input}
         """
 
 rule mapping:
     input:
-        "{sample}_trimmed.fq"
+        "{sample}_trimmed.fastq"
     output:
         "{sample}_aligned.bam"
     shell:

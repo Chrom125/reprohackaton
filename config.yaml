@@ -3,6 +3,7 @@ samples:
 
 output_dir: results
 
-trim:
+trimming:
   q: 20
-  length: 25
+  m: 25
+  a: AACCGGTT

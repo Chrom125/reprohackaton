@@ -3,7 +3,7 @@ From: python:2.7
 
 %post
     # Install dependencies
-    apt-get update && apt-get install -y python3 build-essential wget && \
+    apt-get update && apt-get install -y build-essential wget && \
     rm -rf /var/lib/apt/lists/*
 
     # Download and Install cutadapt-v.1.11

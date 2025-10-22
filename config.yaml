@@ -1,0 +1,8 @@
+samples:
+  - GSE139659
+
+output_dir: results
+
+trim:
+  q: 20
+  length: 25

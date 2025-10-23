@@ -73,10 +73,13 @@ rule mapping:
 
 rule featurecounts:
     input:
-        "results/mapping/{sample}_aligned.bam"
+        mapping = "results/mapping/{sample}_aligned.bam",
+        annotation = "results/Genome_Annotation/reference.gff"
     output:
         "results/featurecounts/{sample}_counts.txt"
+    container:
+        "https://zenodo.org/records/17426103/files/feature-counts.sif?download=1"
     shell:
         """
-        featureCounts --extraAttributes Name -t gene -g ID -F GTF -T 4 -a reference.gff -o {output} {input}
+        featureCounts -t gene -g ID -F GTF -T 4 -a {input.annotation} -o {output} {input.mapping}
         """

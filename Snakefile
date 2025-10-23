@@ -1,6 +1,6 @@
 configfile: "config.yaml"
 
-samples = ["GSE139659"]
+samples = ["GSM4145662", "GSM4145662", "GSM4145663", "GSM4145664", "GSM4145665", "GSM4145666"]
 
 rule all:
     input:
@@ -59,15 +59,14 @@ rule genome_index:
 
 rule mapping:
     input:
-        trimmed = "results/trimming/{sample}_trimmed.fastq",
-        index_reference = expand("results/Reference_Genome/index_reference.{i}.ebwt", i=[1,2,3,4,"rev.1","rev.2"])
+        trimmed = "results/trimming/{sample}_trimmed.fastq"
     output:
         "results/mapping/{sample}_aligned.bam"
     container:
         "https://zenodo.org/records/17426665/files/bowtie-samtools.img?download=1"
     shell:
         """
-        echo "youhou"
+        echo "Début du mapping"
         bowtie -p 4 -S results/Reference_Genome/index_reference {input.trimmed} | samtools sort -@ 4 > {output}
         """
 

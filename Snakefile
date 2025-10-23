@@ -59,13 +59,13 @@ rule genome_index:
 
 rule mapping:
     input:
-        "results/trimming/{sample}_trimmed.fastq"
+        trimmed = "results/trimming/{sample}_trimmed.fastq"
+        index_reference = "results/Reference_Genome/index_reference.1.ebwt"
     output:
         "results/mapping/{sample}_aligned.bam"
     shell:
         """
-        bowtie-build reference.fasta index_reference.fasta
-        bowtie -p 4 -S index_reference.fasta {input} | samtools sort -@ 4 > {output}
+        bowtie -p 4 -S {input.index_reference} {input.trimmed} | samtools sort -@ 4 > {output}
         """
 
 rule featurecounts:

@@ -1,3 +1,7 @@
+wget https://github.com/apptainer/apptainer/releases/download/v1.4.3/apptainer_1.4.3_amd64.deb
+sudo apt install -y ./apptainer_1.4.3_amd64.deb
+rm ./apptainer_1.4.3_amd64.deb
+
 snakemake -s Snakefile --cores 4
 
 conda install -c bioconda snakemake

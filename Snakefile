@@ -49,7 +49,7 @@ rule genome_index:
     input:
         "results/Reference_Genome/reference.fasta"
     output:
-        "results/Reference_Genome/index_reference.1.ebwt"
+        expand("results/Reference_Genome/index_reference.{i}.ebwt", i=[1,2,3,4,"rev.1","rev.2"])
     container:
         "https://zenodo.org/records/17426665/files/bowtie-samtools.img?download=1"
     shell:

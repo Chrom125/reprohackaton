@@ -22,7 +22,7 @@ rule trimming:
     output:
         "results/trimming/{sample}_trimmed.fastq"
     container:
-        "cutadapt.img"
+        "https://zenodo.org/records/17423944/files/cutadapt.img?download=1"
     shell:
         """
         cutadapt -a {config[trimming][a]} -m {config[trimming][m]} -o {output} {input}

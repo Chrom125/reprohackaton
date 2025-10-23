@@ -60,14 +60,15 @@ rule genome_index:
 rule mapping:
     input:
         trimmed = "results/trimming/{sample}_trimmed.fastq",
-        index_reference = "results/Reference_Genome/index_reference.fasta"
+        index_reference = expand("results/Reference_Genome/index_reference.{i}.ebwt", i=[1,2,3,4,"rev.1","rev.2"])
     output:
         "results/mapping/{sample}_aligned.bam"
     container:
         "https://zenodo.org/records/17426665/files/bowtie-samtools.img?download=1"
     shell:
         """
-        bowtie -p 4 -S {input.index_reference} {input.trimmed} | samtools sort -@ 4 > {output}
+        echo "youhou"
+        bowtie -p 4 -S results/Reference_Genome/index_reference {input.trimmed} | samtools sort -@ 4 > {output}
         """
 
 rule featurecounts:

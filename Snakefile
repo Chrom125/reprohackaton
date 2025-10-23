@@ -42,7 +42,7 @@ rule genome_annotation:
         "results/Genome_Annotation/reference.gff"
     shell:
         """
-        wget -q -O {output} "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&report=gff3&id=CP000253.1" &> {log}
+        wget -q -O {output} "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&report=gff3&id=CP000253.1"
         """
 
 rule genome_index:
@@ -51,7 +51,7 @@ rule genome_index:
     output:
         "results/Reference_Genome/index_reference.1.ebwt"
     container:
-        "https://zenodo.org/records/17425965/files/bowtie-samtools.img?download=1"
+        "https://zenodo.org/records/17426665/files/bowtie-samtools.img?download=1"
     shell:
         """
         bowtie-build {input} results/Reference_Genome/index_reference
@@ -64,7 +64,7 @@ rule mapping:
     output:
         "results/mapping/{sample}_aligned.bam"
     container:
-        "https://zenodo.org/records/17425965/files/bowtie-samtools.img?download=1"
+        "https://zenodo.org/records/17426665/files/bowtie-samtools.img?download=1"
     shell:
         """
         bowtie -p 4 -S {input.index_reference} {input.trimmed} | samtools sort -@ 4 > {output}

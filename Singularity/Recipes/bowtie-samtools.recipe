@@ -9,7 +9,6 @@ From: ubuntu:24.04
     # Install bowtie v0.12.7
     wget "https://sourceforge.net/projects/bowtie-bio/files/bowtie/0.12.7/bowtie-0.12.7-linux-x86_64.zip"
     unzip bowtie-0.12.7-linux-x86_64.zip
-    chmod +x /bowtie-0.12.7/*
     rm bowtie-0.12.7-linux-x86_64.zip
     
     # Install samtools v1.22.1
@@ -22,7 +21,7 @@ From: ubuntu:24.04
     make install
     
 %environment
-    export PATH=/bowtie-0.12.7:/samtools-1.22.1/bin:$PATH
+    export PATH=/bowtie-0.12.7:/samtools/bin:$PATH
 
 %runscript
 case "$1" in

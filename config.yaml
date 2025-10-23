@@ -7,3 +7,6 @@ trimming:
   q: 20
   m: 25
   a: AACCGGTT
+
+
+threads: 4

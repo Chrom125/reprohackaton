@@ -4,13 +4,23 @@ samples = ["GSE139659"]
 
 rule all:
     input:
-        expand("{sample}_counts.txt", sample=samples)
+        expand("results/featurecounts/{sample}_counts.txt", sample=samples)
+
+rule download_data:
+    output:
+        "results/raw-data/{sample}.fastq"
+    container:
+        "https://zenodo.org/records/17423176/files/sratoolkit-fasterq-dump.sif"
+    shell:
+        """
+        fasterq-dump --threads 4 --progress -O results/raw-data {wildcards.sample}
+        """
 
 rule trimming:
     input:
-        "results/trimming/{sample}.fastq"
+        "results/raw-data/{sample}.fastq"
     output:
-        "results/raw-data/{sample}_trimmed.fastq"
+        "results/trimming/{sample}_trimmed.fastq"
     container:
         "cutadapt.img"
     shell:
@@ -20,9 +30,9 @@ rule trimming:
 
 rule mapping:
     input:
-        "{sample}_trimmed.fastq"
+        "results/trimming/{sample}_trimmed.fastq"
     output:
-        "{sample}_aligned.bam"
+        "results/mapping/{sample}_aligned.bam"
     shell:
         """
         bowtie-build reference.fasta index_reference.fasta
@@ -31,9 +41,9 @@ rule mapping:
 
 rule featurecounts:
     input:
-        "{sample}_aligned.bam"
+        "results/mapping/{sample}_aligned.bam"
     output:
-        "{sample}_counts.txt"
+        "results/featurecounts/{sample}_counts.txt"
     shell:
         """
         featureCounts --extraAttributes Name -t gene -g ID -F GTF -T 4 -a reference.gff -o {output} {input}

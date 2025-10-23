@@ -3,18 +3,26 @@ From: ubuntu:22.04
 
 %post
     set -eux
+    # Updating package list and install wget + tar
     apt-get update 
     apt-get install -y wget tar
+
+    # Downloading the subread 1.4.6-p3 release from the official SourceForge repository
     wget -O subread-1.4.6-p3-Linux-x86_64.tar.gz https://sourceforge.net/projects/subread/files/subread-1.4.6-p3/subread-1.4.6-p3-Linux-x86_64.tar.gz/download
+    
+    # Creating installation directory for the archive extraction
     mkdir -p /subread_tool
     tar -xzf subread-1.4.6-p3-Linux-x86_64.tar.gz --strip-components=1 -C /subread_tool
+
+    # Removing the archive
     rm subread-1.4.6-p3-Linux-x86_64.tar.gz
 
 
 %environment
+    # Adding subread binaries to the PATH
     export PATH=/subread_tool/bin:$PATH
 %runscript
-    featureCounts -t gene -g ID -s 1 -F GTF -T 4 -o counts.txt "$@"
+    exec featureCounts "$@"
 %labels
     Author MD
     Version v0.0.1 

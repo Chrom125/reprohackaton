@@ -28,6 +28,48 @@ rule trimming:
         cutadapt -a {config[trimming][a]} -m {config[trimming][m]} -o {output} {input}
         """
 
+
+rule reference_genome:
+    output:
+        "results/Reference_Genome/reference.fasta"
+    log:
+        "logs/reference_genome.log"
+    container:
+        ""
+    shell:
+        """
+        wget -q -O {output} "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=CP000253.1&rettype=fasta" &> {log}
+        """
+
+rule genome_annotation:
+    output:
+        "results/Genome_Annotation/reference.gff"
+    log:
+        "logs/genome_annotation.log"
+    container:
+        ""
+    shell:
+        """
+        wget -q -O {output} "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&report=gff3&id=CP000253.1" &> {log}
+        """
+
+rule genome_index:
+    input:
+        "results/Reference_Genome/reference.fasta"
+    output:
+        "results/Reference_Genome/index_reference.1.ebwt"
+    log:
+        "logs/genome_index.log"
+    threads: config["threads"]
+    container:
+        ""
+    shell:
+        """
+        bowtie-build {input} results/Reference_Genome/index_reference &> {log}
+        """
+
+
+
 rule mapping:
     input:
         "results/trimming/{sample}_trimmed.fastq"

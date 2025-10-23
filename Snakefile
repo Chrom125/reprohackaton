@@ -42,7 +42,7 @@ rule genome_annotation:
         "results/Genome_Annotation/reference.gff"
     shell:
         """
-        wget -q -O {output} "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&report=gff3&id=CP000253.1" &> {log}
+        wget -q -O {output} "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&report=gff3&id=CP000253.1"
         """
 
 rule genome_index:

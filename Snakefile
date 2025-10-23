@@ -32,22 +32,14 @@ rule trimming:
 rule reference_genome:
     output:
         "results/Reference_Genome/reference.fasta"
-    log:
-        "logs/reference_genome.log"
-    container:
-        ""
     shell:
         """
-        wget -q -O {output} "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=CP000253.1&rettype=fasta" &> {log}
+        wget -q -O {output} "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=CP000253.1&rettype=fasta" 
         """
 
 rule genome_annotation:
     output:
         "results/Genome_Annotation/reference.gff"
-    log:
-        "logs/genome_annotation.log"
-    container:
-        ""
     shell:
         """
         wget -q -O {output} "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&report=gff3&id=CP000253.1" &> {log}
@@ -58,17 +50,12 @@ rule genome_index:
         "results/Reference_Genome/reference.fasta"
     output:
         "results/Reference_Genome/index_reference.1.ebwt"
-    log:
-        "logs/genome_index.log"
-    threads: config["threads"]
     container:
         ""
     shell:
         """
-        bowtie-build {input} results/Reference_Genome/index_reference &> {log}
+        bowtie-build {input} results/Reference_Genome/index_reference
         """
-
-
 
 rule mapping:
     input:

@@ -22,7 +22,8 @@ From: ubuntu:22.04
     # Adding the SRA Toolkit binaries to the PATH
     export PATH=/sratoolkit/bin:$PATH
 %runscript
-    fasterq-dump --threads 4 --progress "$@"
+    exec fasterq-dump "$@"
 %labels
     Author MD
     Version v0.0.1 
+    

@@ -1,16 +1,20 @@
 configfile: "config.yaml"
 
-import pandas as pd
+############################################## Script for generating a mapping of sample labels to SRA IDs ##############################################
+label_to_sra_id = {}
+with open(config["sample_table"]) as f:
+    next(f)
+    for line in f:
+        sra_id, label = line.strip().split("\t")
+        label_to_sra_id[label] = sra_id
 
-metadata = pd.read_table(config['sample_table'], dtype=str)
-sra_id = metadata['SRA_ID'].unique().tolist()
-label_to_sra_id = metadata.set_index("Label")["SRA_ID"].to_dict()
 
+
+########################################################## Snakefile rules ############################################
 #Final output: a single counts file with all samples combined
 rule all:
     input:
         "results/featurecounts/counts.txt"
-
 
 rule download_data:
     output:
@@ -81,7 +85,7 @@ rule mapping:
 
 rule featurecounts:
     input:
-        expand("results/mapping/{sample}_aligned.bam", sample=metadata['Label'].tolist())
+        expand("results/mapping/{sample}_aligned.bam", sample= list(label_to_sra_id.keys()))
     output:
         "results/featurecounts/counts.txt"
     container:

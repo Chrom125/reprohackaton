@@ -1,81 +1,95 @@
 configfile: "config.yaml"
 
-samples = ["GSE139659"]
+import pandas as pd
 
+metadata = pd.read_table(config['sample_table'], dtype=str)
+sra_id = sample_table['SRA_ID'].unique().tolist()
+label_to_sra_id = metadata.set_index("Label")["SRA_ID"].to_dict()
+
+#Final output: a single counts file with all samples combined
 rule all:
     input:
-        expand("results/featurecounts/{sample}_counts.txt", sample=samples)
+        counts_file = "counts.txt"
+
 
 rule download_data:
     output:
-        "results/raw-data/{sample}.fastq"
+        "{config[output_dir]}/{config[download_data][output_dir]}/{sample}.fastq"
     container:
         "https://zenodo.org/records/17423176/files/sratoolkit-fasterq-dump.sif"
+    params: 
+        read_data = lambda wildcards.sample : label_to_sra_id[wildcards.sample]
     shell:
         """
-        fasterq-dump --threads 4 --progress -O results/raw-data {wildcards.sample}
+        fasterq-dump --threads {config[download_data][threads]} --progress -O {config[output_dir]}/{config[download_data][output_dir]} \
+        -o {sample}.fastq {params.read_data}
         """
 
 rule trimming:
     input:
-        "results/raw-data/{sample}.fastq"
+        "{config[output_dir]}/{config[download_data][output_dir]}/{sample}.fastq"
     output:
-        "results/trimming/{sample}_trimmed.fastq"
+        "{config[output_dir]}/trimming/{sample}_trimmed.fastq"
     container:
         "https://zenodo.org/records/17424137/files/cutadapt.img?download=1"
     shell:
         """
-        cutadapt -a {config[trimming][a]} -m {config[trimming][m]} -o {output} {input}
+        cutadapt -a {config[trimming][a]} -m {config[trimming][m]} -q {config[trimming][q]} -o {output} {input}
         """
 
 
 rule reference_genome:
     output:
-        "results/Reference_Genome/reference.fasta"
+        "{config[output_dir]}/Reference_Genome/{config[reference_genome][filename]}"
     shell:
         """
-        wget -q -O {output} "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=CP000253.1&rettype=fasta" 
+        wget -q -O {output} {config[reference_genome][fasta_url]}
         """
 
 rule genome_annotation:
     output:
-        "results/Genome_Annotation/reference.gff"
+        "{config[output_dir]}/Genome_Annotation/{config[reference_genome][annotation_filename]}"
     shell:
         """
-        wget -q -O {output} "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&report=gff3&id=CP000253.1" &> {log}
+        wget -q -O {output} {config[reference_genome][annotation_url]}
         """
 
 rule genome_index:
     input:
-        "results/Reference_Genome/reference.fasta"
+        "{config[output_dir]}/Reference_Genome/{config[reference_genome][filename]}"
     output:
-        "results/Reference_Genome/index_reference.1.ebwt"
+        expand("{config[output_dir]}/Reference_Genome/{config[genome_index][index_files_prefix]}.{i}.ebwt", i=[1,2,3,4,"rev.1","rev.2"])
     container:
         "https://zenodo.org/records/17425965/files/bowtie-samtools.img?download=1"
     shell:
         """
-        bowtie-build {input} results/Reference_Genome/index_reference
+        bowtie-build {input} results/Reference_Genome/{config[genome_index][index_files_prefix]}
         """
 
 rule mapping:
     input:
-        trimmed = "results/trimming/{sample}_trimmed.fastq"
-        index_reference = "results/Reference_Genome/index_reference.1.ebwt"
+        trimmed = "{config[output_dir]}/trimming/{sample}_trimmed.fastq"
+        index_reference = expand("{config[output_dir]}/Reference_Genome/{config[genome_index][index_files_prefix]}.{i}.ebwt", i=[1,2,3,4,"rev.1","rev.2"])
     output:
-        "results/mapping/{sample}_aligned.bam"
+        "{config[output_dir]}/mapping/{sample}_aligned.bam"
     container:
         "https://zenodo.org/records/17425965/files/bowtie-samtools.img?download=1"
     shell:
         """
-        bowtie -p 4 -S {input.index_reference} {input.trimmed} | samtools sort -@ 4 > {output}
+        bowtie -p {config[mapping][threads]} -S {input.index_reference} {input.trimmed} | samtools sort -@ {config[mapping][threads]} > {output}
         """
 
 rule featurecounts:
     input:
-        "results/mapping/{sample}_aligned.bam"
+        expand("{config[output_dir]}/mapping/{sample}_aligned.bam", sample=metadata['Label'].tolist())
     output:
-        "results/featurecounts/{sample}_counts.txt"
+        "{config[output_dir]}/featurecounts/counts.txt"
+    container:
+        "https://zenodo.org/records/17425965/files/bowtie-samtools.img?download=1"
     shell:
         """
-        featureCounts --extraAttributes Name -t gene -g ID -F GTF -T 4 -a reference.gff -o {output} {input}
+        featureCounts -t {config[featurecounts][feature_type]} \
+        -g {config[featurecounts][attribute_type]} -F {config[featurecounts][annotation_format]} \
+        -T  {config[featurecounts][threads]} \
+        -a {config[featurecounts][annotation_file]} -o {output} {input}
         """

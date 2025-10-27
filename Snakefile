@@ -15,7 +15,7 @@ with open(config["sample_table"]) as f:
 #Final output: a single counts file with all samples combined
 rule all:
     input:
-        "results/featurecounts/counts.txt"
+        "results/featurecounts/processed_counts.txt"
 
 rule download_data:
     output:
@@ -100,3 +100,26 @@ rule featurecounts:
         -a {input.annotation} \
         -s {config[featurecounts][s]} -o {output} {input.mapping}
         """
+
+rule processing_counts:
+    input : 
+        counts= "results/featurecounts/counts.txt"
+    output:
+        processed_counts="results/featurecounts/processed_counts.txt"
+    run:
+        with open(input.counts) as infile, open(output.processed_counts, "w") as outfile:
+            for line in infile:
+                if line.startswith("#"):
+                    continue             #ignoring the header lines starting with #
+                line = line.strip().split("\t")
+                if line[0] == "Geneid":       # handling the table header
+                    for i in range(6, len(line)):
+                        a = line[i].split("/")
+                        a = a[-1].replace("_aligned.bam", "")#Extracting only the sample label from the full path
+                        line[i] = a
+                if line[0].startswith("gene-"):
+                    line[0] = line[0].replace("gene-", "")  #Removing 'gene-' prefix from Gene IDs
+                
+                #Keeping only Geneid and counts columns
+                line = [line[0]] + line[6:]   #Keeping only Geneid and counts columns
+                outfile.write("\t".join(line) + "\n")

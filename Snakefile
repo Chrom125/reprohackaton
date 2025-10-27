@@ -1,6 +1,7 @@
 configfile: "config.yaml"
 
 ############################################## Script for generating a mapping of sample labels to SRA IDs ##############################################
+
 label_to_sra_id = {}
 with open(config["sample_table"]) as f:
     next(f)
@@ -95,5 +96,6 @@ rule featurecounts:
         featureCounts -t {config[featurecounts][feature_type]} \
         -g {config[featurecounts][attribute_type]} -F {config[featurecounts][annotation_format]} \
         -T  {config[featurecounts][threads]} \
-        -a results/Genome_Annotation/reference.gff -o {output} {input}
+        -a results/Genome_Annotation/reference.gff \
+        -s {config[featurecounts][s]} -o {output} {input}
         """

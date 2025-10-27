@@ -86,16 +86,17 @@ rule mapping:
 
 rule featurecounts:
     input:
-        expand("results/mapping/{sample}_aligned.bam", sample= list(label_to_sra_id.keys()))
+        mapping = expand("results/mapping/{sample}_aligned.bam", sample= list(label_to_sra_id.keys())),
+        annotation = "results/Genome_Annotation/reference.gff"
     output:
         "results/featurecounts/counts.txt"
     container:
-        "https://zenodo.org/records/17425965/files/bowtie-samtools.img?download=1"
+        "https://zenodo.org/records/17426103/files/feature-counts.sif?download=1"
     shell:
         """
         featureCounts -t {config[featurecounts][feature_type]} \
         -g {config[featurecounts][attribute_type]} -F {config[featurecounts][annotation_format]} \
         -T  {config[featurecounts][threads]} \
-        -a results/Genome_Annotation/reference.gff \
-        -s {config[featurecounts][s]} -o {output} {input}
+        -a {input.annotation} \
+        -s {config[featurecounts][s]} -o {output} {input.mapping}
         """

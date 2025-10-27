@@ -1,38 +1,12 @@
+samples:
+  - GSE139659
 
-
-##############################################################################################
-############################## Global configuration parameters ###############################
-##############################################################################################
-sample_table: "metadata.tsv"
-
-
-
-###############################################################################################
-############################## Rule-specific configuration parameters #########################
-###############################################################################################
-
-download_data:
-  threads: 4
+output_dir: results
 
 trimming:
   q: 20
   m: 25
   a: AACCGGTT
 
-reference_genome:
-  fasta_url: "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=CP000253.1&rettype=fasta"
 
-
-genome_annotation:
-  annotation_url: "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&report=gff3&id=CP000253.1"
-
-
-mapping: 
-  threads: 4
-
-featurecounts:
-  feature_type: "gene"
-  attribute_type: "ID"
-  annotation_format: "GFF"
-  threads: 4
-  s: 1
+threads: 4

@@ -1,37 +1,19 @@
 configfile: "config.yaml"
 
-<<<<<<< HEAD
 samples = ["GSM4145663", "GSM4145665", "GSM4145666"]
-=======
-############################################## Script for generating a mapping of sample labels to SRA IDs ##############################################
->>>>>>> maurel_snakemake
 
-label_to_sra_id = {}
-with open(config["sample_table"]) as f:
-    next(f)
-    for line in f:
-        sra_id, label = line.strip().split("\t")
-        label_to_sra_id[label] = sra_id
-
-
-
-########################################################## Snakefile rules ############################################
-#Final output: a single counts file with all samples combined
 rule all:
     input:
-        "results/featurecounts/processed_counts.txt"
+        expand("results/featurecounts/{sample}_counts.txt", sample=samples)
 
 rule download_data:
     output:
         "results/raw-data/{sample}.fastq"
     container:
         "https://zenodo.org/records/17423176/files/sratoolkit-fasterq-dump.sif"
-    params: 
-        read_data = lambda wildcards : label_to_sra_id[wildcards.sample]
     shell:
         """
-        fasterq-dump --threads {config[download_data][threads]} --progress -O results/raw-data \
-        -o {wildcards.sample}.fastq {params.read_data}
+        fasterq-dump --threads 4 --progress -O results/raw-data {wildcards.sample}
         """
 
 rule trimming:
@@ -43,7 +25,7 @@ rule trimming:
         "https://zenodo.org/records/17424137/files/cutadapt.img?download=1"
     shell:
         """
-        cutadapt -a {config[trimming][a]} -m {config[trimming][m]} -q {config[trimming][q]} -o {output} {input}
+        cutadapt -a {config[trimming][a]} -m {config[trimming][m]} -o {output} {input}
         """
 
 
@@ -52,7 +34,7 @@ rule reference_genome:
         "results/Reference_Genome/reference.fasta"
     shell:
         """
-        wget -q -O {output} "{config[reference_genome][fasta_url]}"
+        wget -q -O {output} "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=CP000253.1&rettype=fasta" 
         """
 
 rule genome_annotation:
@@ -60,11 +42,7 @@ rule genome_annotation:
         "results/Genome_Annotation/reference.gff"
     shell:
         """
-<<<<<<< HEAD
         wget -q -O {output} "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&report=gff3&id=CP000253.1"
-=======
-        wget -q -O {output} "{config[genome_annotation][annotation_url]}"
->>>>>>> maurel_snakemake
         """
 
 rule genome_index:
@@ -82,72 +60,26 @@ rule genome_index:
 rule mapping:
     input:
         trimmed = "results/trimming/{sample}_trimmed.fastq",
-<<<<<<< HEAD
         reference = expand("results/Reference_Genome/index_reference.{i}.ebwt", i=[1,2,3,4,"rev.1","rev.2"])
-=======
-        index_reference = expand("results/Reference_Genome/index_reference.{i}.ebwt", i=[1,2,3,4,"rev.1","rev.2"])
->>>>>>> maurel_snakemake
     output:
         "results/mapping/{sample}_aligned.bam"
     container:
         "https://zenodo.org/records/17426665/files/bowtie-samtools.img?download=1"
     shell:
         """
-<<<<<<< HEAD
         echo "Début du mapping"
         bowtie -p 4 -S results/Reference_Genome/index_reference {input.trimmed} | samtools sort -@ 4 > {output}
-=======
-        bowtie -p {config[mapping][threads]} -S results/Reference_Genome/index_reference {input.trimmed} | samtools sort -@ {config[mapping][threads]} > {output}
->>>>>>> maurel_snakemake
         """
 
 rule featurecounts:
     input:
-<<<<<<< HEAD
         mapping = "results/mapping/{sample}_aligned.bam",
         annotation = "results/Genome_Annotation/reference.gff"
     output:
         "results/featurecounts/{sample}_counts.txt"
-=======
-        mapping = expand("results/mapping/{sample}_aligned.bam", sample= list(label_to_sra_id.keys())),
-        annotation = "results/Genome_Annotation/reference.gff"
-    output:
-        "results/featurecounts/counts.txt"
->>>>>>> maurel_snakemake
     container:
         "https://zenodo.org/records/17426103/files/feature-counts.sif?download=1"
     shell:
         """
-<<<<<<< HEAD
         featureCounts -t gene -g ID -F GTF -T 4 -a {input.annotation} -o {output} {input.mapping}
-=======
-        featureCounts -t {config[featurecounts][feature_type]} \
-        -g {config[featurecounts][attribute_type]} -F {config[featurecounts][annotation_format]} \
-        -T  {config[featurecounts][threads]} \
-        -a {input.annotation} \
-        -s {config[featurecounts][s]} -o {output} {input.mapping}
->>>>>>> maurel_snakemake
         """
-
-rule processing_counts:
-    input : 
-        counts= "results/featurecounts/counts.txt"
-    output:
-        processed_counts="results/featurecounts/processed_counts.txt"
-    run:
-        with open(input.counts) as infile, open(output.processed_counts, "w") as outfile:
-            for line in infile:
-                if line.startswith("#"):
-                    continue             #ignoring the header lines starting with #
-                line = line.strip().split("\t")
-                if line[0] == "Geneid":       # handling the table header
-                    for i in range(6, len(line)):
-                        a = line[i].split("/")
-                        a = a[-1].replace("_aligned.bam", "")#Extracting only the sample label from the full path
-                        line[i] = a
-                if line[0].startswith("gene-"):
-                    line[0] = line[0].replace("gene-", "")  #Removing 'gene-' prefix from Gene IDs
-                
-                #Keeping only Geneid and counts columns
-                line = [line[0]] + line[6:]   #Keeping only Geneid and counts columns
-                outfile.write("\t".join(line) + "\n")

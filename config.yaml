@@ -35,3 +35,4 @@ featurecounts:
   attribute_type: "ID"
   annotation_format: "GFF"
   threads: 4
+  s: 1

@@ -48,7 +48,7 @@ rule reference_genome:
         "results/Reference_Genome/reference.fasta"
     shell:
         """
-        wget -q -O {output} {config[reference_genome][fasta_url]}
+        wget -q -O {output} "{config[reference_genome][fasta_url]}"
         """
 
 rule genome_annotation:
@@ -56,7 +56,7 @@ rule genome_annotation:
         "results/Genome_Annotation/reference.gff"
     shell:
         """
-        wget -q -O {output} {config[genome_annotation][annotation_url]}
+        wget -q -O {output} "{config[genome_annotation][annotation_url]}"
         """
 
 rule genome_index:

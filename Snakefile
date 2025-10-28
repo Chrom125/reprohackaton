@@ -20,6 +20,9 @@ rule all:
 rule download_data:
     output:
         "results/raw-data/{sample}.fastq"
+    log:
+        out = "logs/download_data/{sample}.out",
+        err = "logs/download_data/{sample}.err"
     container:
         "https://zenodo.org/records/17423176/files/sratoolkit-fasterq-dump.sif"
     params: 
@@ -27,7 +30,7 @@ rule download_data:
     shell:
         """
         fasterq-dump --threads {config[download_data][threads]} --progress -O results/raw-data \
-        -o {wildcards.sample}.fastq {params.read_data}
+        -o {wildcards.sample}.fastq {params.read_data} >{log.out} 2>{log.err}
         """
 
 rule trimming:
@@ -35,28 +38,38 @@ rule trimming:
         "results/raw-data/{sample}.fastq"
     output:
         "results/trimming/{sample}_trimmed.fastq"
+    log:
+        out = "logs/trimming/{sample}.out",
+        err = "logs/trimming/{sample}.err"
     container:
         "https://zenodo.org/records/17424137/files/cutadapt.img?download=1"
     shell:
         """
-        cutadapt -a {config[trimming][a]} -m {config[trimming][m]} -q {config[trimming][q]} -o {output} {input}
+        cutadapt -a {config[trimming][a]} -m {config[trimming][m]} -q {config[trimming][q]} -o {output} {input}\
+        >{log.out} 2>{log.err}
         """
 
 
 rule reference_genome:
     output:
         "results/Reference_Genome/reference.fasta"
+    log:
+        out = "logs/Reference_Genome/reference_genome_download.out",
+        err = "logs/Reference_Genome/reference_genome_download.err"
     shell:
         """
-        wget -q -O {output} "{config[reference_genome][fasta_url]}"
+        wget -q -O {output} "{config[reference_genome][fasta_url]}" >{log.out} 2>{log.err}
         """
 
 rule genome_annotation:
     output:
         "results/Genome_Annotation/reference.gff"
+    log:
+        out = "logs/Genome_Annotation/reference_genome_annotation_download.out",
+        err = "logs/Genome_Annotation/reference_genome_annotation_download.err"
     shell:
         """
-        wget -q -O {output} "{config[genome_annotation][annotation_url]}"
+        wget -q -O {output} "{config[genome_annotation][annotation_url]}" >{log.out} 2>{log.err}
         """
 
 rule genome_index:
@@ -64,11 +77,14 @@ rule genome_index:
         "results/Reference_Genome/reference.fasta"
     output:
         expand("results/Reference_Genome/index_reference.{i}.ebwt", i=[1,2,3,4,"rev.1","rev.2"])
+    log:
+        out = "logs/Reference_Genome/reference_genome_index.out",
+        err = "logs/Reference_Genome/reference_genome_index.err"
     container:
         "https://zenodo.org/records/17425965/files/bowtie-samtools.img?download=1"
     shell:
         """
-        bowtie-build {input} results/Reference_Genome/index_reference
+        bowtie-build {input} results/Reference_Genome/index_reference >{log.out} 2>{log.err}
         """
 
 rule mapping:
@@ -77,11 +93,15 @@ rule mapping:
         index_reference = expand("results/Reference_Genome/index_reference.{i}.ebwt", i=[1,2,3,4,"rev.1","rev.2"])
     output:
         "results/mapping/{sample}_aligned.bam"
+    log:
+        mapping = "logs/mapping/bowtie/{sample}_trimmed_mapping.out",
+        sorting = "logs/mapping/samtools-sort/{sample}_aligned_sorting.out"
     container:
         "https://zenodo.org/records/17425965/files/bowtie-samtools.img?download=1"
     shell:
         """
-        bowtie -p {config[mapping][threads]} -S results/Reference_Genome/index_reference {input.trimmed} | samtools sort -@ {config[mapping][threads]} > {output}
+        bowtie -p {config[mapping][threads]} -S results/Reference_Genome/index_reference \
+        {input.trimmed} 2>{log.mapping} | samtools sort -@ {config[mapping][threads]} >{output} 2>{log.sorting}
         """
 
 rule featurecounts:
@@ -90,6 +110,9 @@ rule featurecounts:
         annotation = "results/Genome_Annotation/reference.gff"
     output:
         "results/featurecounts/counts.txt"
+    log:
+        out = "logs/featurecounts/counts.out",
+        err = "logs/featurecounts/counts.err"
     container:
         "https://zenodo.org/records/17426103/files/feature-counts.sif?download=1"
     shell:
@@ -98,7 +121,7 @@ rule featurecounts:
         -g {config[featurecounts][attribute_type]} -F {config[featurecounts][annotation_format]} \
         -T  {config[featurecounts][threads]} \
         -a {input.annotation} \
-        -s {config[featurecounts][s]} -o {output} {input.mapping}
+        -s {config[featurecounts][s]} -o {output} {input.mapping} >{log.out} 2>{log.err}
         """
 
 rule processing_counts:

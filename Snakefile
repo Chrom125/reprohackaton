@@ -1,13 +1,13 @@
 configfile: "config.yaml"
 
-############################################## Script for generating a mapping of sample labels to SRA IDs ##############################################
+############################################## Script for generating a mapping of sample to SRA IDs ##############################################
 
-label_to_sra_id = {}
+sample_to_sra_id = {}
 with open(config["sample_table"]) as f:
     next(f)
     for line in f:
         sra_id, sample, label = line.strip().split("\t")
-        label_to_sra_id[sample] = sra_id
+        sample_to_sra_id[sample] = sra_id
 
 
 
@@ -25,7 +25,7 @@ rule download_data:
     container:
         "https://zenodo.org/records/17423176/files/sratoolkit-fasterq-dump.sif"
     params: 
-        read_data = lambda wildcards : label_to_sra_id[wildcards.sample]
+        read_data = lambda wildcards : sample_to_sra_id[wildcards.sample]
     shell:
         """
         fasterq-dump --threads {config[download_data][threads]} --progress -O results/raw-data \
@@ -103,7 +103,7 @@ rule mapping:
 
 rule featurecounts:
     input:
-        mapping = expand("results/mapping/{sample}_aligned.bam", sample= list(label_to_sra_id.keys())),
+        mapping = expand("results/mapping/{sample}_aligned.bam", sample= list(sample_to_sra_id.keys())),
         annotation = "results/Genome_Annotation/reference.gff"
     output:
         "results/featurecounts/counts.txt"

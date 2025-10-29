@@ -6,8 +6,8 @@ label_to_sra_id = {}
 with open(config["sample_table"]) as f:
     next(f)
     for line in f:
-        sra_id, label = line.strip().split("\t")
-        label_to_sra_id[label] = sra_id
+        sra_id, sample, label = line.strip().split("\t")
+        label_to_sra_id[sample] = sra_id
 
 
 

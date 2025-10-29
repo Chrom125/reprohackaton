@@ -1,7 +1,7 @@
-SRA_ID	Label
-SRR10379721	persister_1
-SRR10379722	persister_2
-SRR10379723	persister_3
-SRR10379724	control_1
-SRR10379725	control_2
-SRR10379726	control_3
+SRA_ID	Sample	Label
+SRR10379721	persister_1	Persister
+SRR10379722	persister_2	Persister
+SRR10379723	persister_3	Persister
+SRR10379724	control_1	Control
+SRR10379725	control_2	Control
+SRR10379726	control_3	Control

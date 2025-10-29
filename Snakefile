@@ -21,8 +21,7 @@ rule download_data:
     output:
         "results/raw-data/{sample}.fastq"
     log:
-        out = "logs/download_data/{sample}.out",
-        err = "logs/download_data/{sample}.err"
+        out = "logs/download_data/{sample}.log"
     container:
         "https://zenodo.org/records/17423176/files/sratoolkit-fasterq-dump.sif"
     params: 
@@ -30,7 +29,7 @@ rule download_data:
     shell:
         """
         fasterq-dump --threads {config[download_data][threads]} --progress -O results/raw-data \
-        -o {wildcards.sample}.fastq {params.read_data} >{log.out} 2>{log.err}
+        -o {wildcards.sample}.fastq {params.read_data} 2>{log.out}
         """
 
 rule trimming:
@@ -54,22 +53,20 @@ rule reference_genome:
     output:
         "results/Reference_Genome/reference.fasta"
     log:
-        out = "logs/Reference_Genome/reference_genome_download.out",
-        err = "logs/Reference_Genome/reference_genome_download.err"
+        out = "logs/Reference_Genome/reference_genome_download.log"
     shell:
         """
-        wget -q -O {output} "{config[reference_genome][fasta_url]}" >{log.out} 2>{log.err}
+        wget -q -O {output} "{config[reference_genome][fasta_url]}" 2>{log.out}
         """
 
 rule genome_annotation:
     output:
         "results/Genome_Annotation/reference.gff"
     log:
-        out = "logs/Genome_Annotation/reference_genome_annotation_download.out",
-        err = "logs/Genome_Annotation/reference_genome_annotation_download.err"
+        out = "logs/Genome_Annotation/reference_genome_annotation_download.log"
     shell:
         """
-        wget -q -O {output} "{config[genome_annotation][annotation_url]}" >{log.out} 2>{log.err}
+        wget -q -O {output} "{config[genome_annotation][annotation_url]}" 2>{log.out}
         """
 
 rule genome_index:
@@ -94,8 +91,8 @@ rule mapping:
     output:
         "results/mapping/{sample}_aligned.bam"
     log:
-        mapping = "logs/mapping/bowtie/{sample}_trimmed_mapping.out",
-        sorting = "logs/mapping/samtools-sort/{sample}_aligned_sorting.out"
+        mapping = "logs/mapping/bowtie/{sample}_trimmed_mapping.log",
+        sorting = "logs/mapping/samtools-sort/{sample}_aligned_sorting.log"
     container:
         "https://zenodo.org/records/17425965/files/bowtie-samtools.img?download=1"
     shell:
@@ -111,8 +108,7 @@ rule featurecounts:
     output:
         "results/featurecounts/counts.txt"
     log:
-        out = "logs/featurecounts/counts.out",
-        err = "logs/featurecounts/counts.err"
+        out = "logs/featurecounts/counts.log"
     container:
         "https://zenodo.org/records/17426103/files/feature-counts.sif?download=1"
     shell:
@@ -121,7 +117,7 @@ rule featurecounts:
         -g {config[featurecounts][attribute_type]} -F {config[featurecounts][annotation_format]} \
         -T  {config[featurecounts][threads]} \
         -a {input.annotation} \
-        -s {config[featurecounts][s]} -o {output} {input.mapping} >{log.out} 2>{log.err}
+        -s {config[featurecounts][s]} -o {output} {input.mapping} 2>{log.out}
         """
 
 rule processing_counts:

@@ -44,7 +44,7 @@ rule trimming:
         "https://zenodo.org/records/17424137/files/cutadapt.img?download=1"
     shell:
         """
-        cutadapt -a {config[trimming][a]} -m {config[trimming][m]} -q {config[trimming][q]} -o {output} {input}\
+        cutadapt -m {config[trimming][m]} -q {config[trimming][q]} -o {output} {input}\
         >{log.out} 2>{log.err}
         """
 

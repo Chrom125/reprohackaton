@@ -17,7 +17,6 @@ download_data:
 trimming:
   q: 20
   m: 25
-  a: AACCGGTT
 
 reference_genome:
   fasta_url: "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=CP000253.1&rettype=fasta"

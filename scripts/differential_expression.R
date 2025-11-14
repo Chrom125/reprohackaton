@@ -10,7 +10,6 @@ and generates MA plots for the entire dataset and translation-related genes')
 
 # Defining the arguments
 parser$add_argument('--countTable', '-c', help= 'Path to the count table file', required= TRUE)
-parser$add_argument('--metadata', '-m', help= 'Path to the metadata file (tsv format)', required= TRUE)
 parser$add_argument('--geneNames', '-g', help= 'Path to the gene names file (Excel format)', required= TRUE)
 parser$add_argument('--outputDir', '-o', help= 'Path to the output directory', required= FALSE, default= './')
 
@@ -19,31 +18,27 @@ xargs = parser$parse_args()
 
 ############################## D.E Analysis ####################################
 library(DESeq2)
-###### Step 1 : Data preparation
+################################################################################
+##################### Step 1 : Data preparation ################################
+################################################################################
 
-#-------------------------------------------------------------------------------
-# Count table
-#-------------------------------------------------------------------------------
+##### Count table
 count_table = read.table(file = xargs$countTable, header = T, sep = "\t", 
                          row.names = 1)
-head(count_table) 
-
+                           
 #Total number of genes
 number_of_genes = dim(count_table)[1]
-number_of_genes
-#2967
+cat("Number of genes in the count table : ", number_of_genes, "\n")
 
-#-------------------------------------------------------------------------------
-# Metadata table
-#-------------------------------------------------------------------------------
-metadata = read.table(xargs$metadata, header = T, sep ="\t")
-rownames(metadata) = metadata$Sample
+##### Metadata table
+
+#Specifying the sample nature via a variable called Label
+metadata = data.frame(Label = factor(c(rep("Persister",3),rep("Control", 3))))
 #It's important to have rownames(metadata) in colnames(count_data)
 #It helps DESeq2 to match samples with their description in the metadata table
+rownames(metadata) = colnames(count_table)
 
-#-------------------------------------------------------------------------------
-# Count table in the DESeq2 format
-#-------------------------------------------------------------------------------
+##### Count table in DESeq2 Format
 
 dds = DESeqDataSetFromMatrix(countData = as.matrix(count_table),
                              colData = metadata,
@@ -52,66 +47,146 @@ dds = DESeqDataSetFromMatrix(countData = as.matrix(count_table),
 #Defining the reference for evaluating the differential expression
 dds$Label = relevel(dds$Label, "Control")
 
+################################################################################
+##################### Step 2 : Clustering using PCA ############################
+################################################################################
+
+#### PCA plot
+
+#Applying a variance stabilizing transformation to raw counts data
+transformed_counts = vst(dds, blind = FALSE)
+
+f1 = plotPCA(transformed_counts, intgroup="Label") +
+     labs(color = "Sample",
+          title = "Principal component analysis")
+f1 = f1 + geom_text_repel(aes(label = name), size = 3, nudge_x = 0.5,         
+                          nudge_y = 0.5,        
+                          force = 2,
+                          segment.size = 0.2 )
+ggsave(file.path(xargs$outputDir,"PCA_plot.png"), plot = f1, width = 6, height = 5, dpi = 600)
 
 
-##### Step 2 : Running D.E Analysis
+################################################################################
+##################### Step 3 : Running DESeq analysis ##########################
+################################################################################
 dds.DE = DESeq(dds)
 
-#Accessing the normalized counts
-normalized_counts <- counts(dds.DE, normalized = TRUE)
-normalized_counts
+
+################################################################################
+######################## Step 4 : Results analysis #############################
+################################################################################
+
+################################## Preparing results table #####################
+
+# Adjusted p-value cutoff to consider a gene as differentially expressed
+padj.cutoff = 0.05
+
+##### DEseq2 results extraction
+DE.results = results(dds.DE, alpha = padj.cutoff)
+cat("log2 fold change (MLE): Label Persister vs Control\n")
+cat("Wald test p-value: Label Persister vs Control\n")
+#Results summary (Number of up/down regulated genes)
+summary(DE.results)
 
 
-
-#### Step3 : Results analysis
-DE.results = results(dds.DE)
-DE.results
-
-# log2 fold change (MLE): Label Persister vs Control 
-# Wald test p-value: Label Persister vs Control 
-# DataFrame with 2967 rows and 6 columns
-# baseMean log2FoldChange     lfcSE      stat      pvalue        padj
-# <numeric>      <numeric> <numeric> <numeric>   <numeric>   <numeric>
-#   SAOUHSC_00001 13042.560       0.274100  0.275688  0.994238 3.20107e-01 4.13735e-01
-# SAOUHSC_00002  9610.983       0.448343  0.180917  2.478164 1.32060e-02 2.67522e-02
-# SAOUHSC_00003   822.104       0.663142  0.359727  1.843457 6.52623e-02 1.07973e-01
-# SAOUHSC_00004  6998.784       1.309560  0.280318  4.671698 2.98719e-06 1.40098e-05
-# SAOUHSC_00005 16195.254       1.288328  0.333230  3.866187 1.10550e-04 3.68011e-04
-
-
-#### DE analysis details for differentially expressed genes only
-padj.treshold = 0.05
-differentially_expressed_genes = DE.results[which(DE.results$padj < padj.treshold),]
-
-#### Number of differentially expressed of genes
-
-dim(differentially_expressed_genes)[1]
-#1483
-
-#### Number of genes up-regulated
-dim(differentially_expressed_genes[differentially_expressed_genes$log2FoldChange > 0,])[1]
-#712
-
-#### Number of genes down-regulated
-dim(differentially_expressed_genes[differentially_expressed_genes$log2FoldChange < 0,])[1]
-#771
-
-
-
-##### MA plot for the entire RNAseq DataSet
-library(ggplot2)
-library(scales) # for formatting axis graduations
-
-#Collecting BaseMean, lFC and padj for all genes
+#### Collecting BaseMean, lFC and padj for all genes
 dataf.DE.results = as.data.frame(DE.results[,c("baseMean","log2FoldChange","padj")])
 #Adding GeneID columns to dataf.DE.results
 dataf.DE.results = data.frame(GeneID = rownames(dataf.DE.results), dataf.DE.results)
 
-#Adding info on the significance of differential expression
-dataf.DE.results$signif = ifelse(!is.na(dataf.DE.results$padj) & dataf.DE.results$padj < padj.treshold,
-  "Significant",               # significantly differentially expressed
-  "Non-Significant"            # Not significantly differentially expressed
+#### Adding info on the significance of differential expression
+dataf.DE.results$signif = ifelse(!is.na(dataf.DE.results$padj) & dataf.DE.results$padj < padj.cutoff,
+                                  "Significant",     # significantly differentially expressed
+                                 "Non-Significant"   # Not significantly differentially expressed
 )
+
+#### Adding gene name information from Aureowiki
+cat("About gene name information from Aureowiki: S. aureus Strain NCTC8325\n")
+library(readxl)
+geneName_geneID_eq = read_excel(xargs$geneNames)
+#Renaming colums
+colnames(geneName_geneID_eq) = c("GeneID", "Organism", "GeneName", "Product")
+
+#Total number of features annotated in Aureowiki
+cat("Total number of features annotated in aureowiki", dim(geneName_geneID_eq)[1], "\n")
+
+#Removing  the last three empty rows which do not contain gene info
+geneName_geneID_eq = geneName_geneID_eq[1:(n-3),]
+
+#Keeping only genes feature type:  with GeneID like "SAOUHSC_*" 
+geneName_geneID_eq = geneName_geneID_eq[grepl("^SAOUHSC_", geneName_geneID_eq$GeneID), ]
+
+#Total number of genes features annotated in Aureowiki
+cat("Total number of gene features annotated in aureowiki (with GeneID like SAOUHSC_*)  :", dim(geneName_geneID_eq)[1], "\n")
+
+##Rapid check of gene content and differences with our count table
+# Gene annotations present in Aureowiki and absent in our count table
+cat("Annotations present in Aureowiki and absent in our count table :\n")
+setdiff(geneName_geneID_eq$GeneID, rownames(count_table))
+
+# Gene annotations present in our table and absent in Aureowiki
+cat("Annotations present in our count table and absent in Aureowiki :\n")
+setdiff(rownames(count_table),geneName_geneID_eq$GeneID)
+
+# Specific verification for the "SAOUHSC_01139/SAOUHSC_01141" entry
+cat("The entry 'SAOUHSC_01139/SAOUHSC_01141' in Aureowiki corresponds to two separate genes in our count table:\n")
+
+#In the Aureowiki table
+cat("In Aureowiki table:\n")
+cat(geneName_geneID_eq[grepl("^SAOUHSC_01139/SAOUHSC_01141", geneName_geneID_eq$GeneID), ], "\n")
+
+#In our table
+cat("In our count table:\n")
+cat(count_table[grepl("^SAOUHSC_01139", rownames(count_table)), ], "\n")
+cat(count_table[grepl("^SAOUHSC_01141", rownames(count_table)), ], "\n")
+
+#### Adding geneName info to the DESeq2 results table (dataf.DE.results)
+dataf.DE.results = merge(dataf.DE.results, geneName_geneID_eq, by = "GeneID", all.x = TRUE)
+dataf.DE.results$GeneName[dataf.DE.results$GeneID=="SAOUHSC_01139"] = "bshC"
+dataf.DE.results$GeneName[dataf.DE.results$GeneID=="SAOUHSC_01141"] = "bshC"
+
+
+
+
+#### Adding KEGG BRITE functional hierarchy info to the DESeq2 results table
+#### to specify metabolic pathways for S.aureus (strain NCTC 8325) genes
+#### S. aureus code in KEGG database is "sao"
+
+library(KEGGREST) # KEGG REST API 
+
+#Correspondance table between S. aureus (code sao) genes and their KEGG BRITE functional hierarchy ID
+GeneID_BRITE.ID= keggLink(target = "brite", source = "sao") # vector of KEGG BRITE functional hierarchy (with the genes as names)
+
+GeneID = sub(pattern = "^sao:",  replacement = "", names(GeneID_BRITE.ID)) #genes ID without the prefix "sao:"
+
+BRITE.ID = sub(pattern = "^br:",  replacement = "", GeneID_BRITE.ID) #KEGG BRITE functional hierarchy ID without the prefix "br:"
+
+GeneID_BRITE.ID= data.frame(GeneID, BRITE.ID) # table GeneID | KEGG BRITE ID
+
+
+#Aggregating all the hierarchies for each gene, since a gene may be active in many functional pathway
+GeneID_BRITE.ID = aggregate(. ~ GeneID, data = GeneID_BRITE.ID,
+                             FUN = function(x) paste(unique(x), collapse = ";"))
+
+#Adding KEGG BRITE functional hierarchy ID info to the DESeq2 results table (dataf.DE.results)
+dataf.DE.results = merge(dataf.DE.results, GeneID_BRITE.ID,
+                                  by= "GeneID", all.x = TRUE)
+cat("About S. aureus strain NCTC8325 gene functional annotation in KEGG BRITE: \n")
+cat("Total number of genes with KEGG BRITE functional hierarchy annotation : ",
+    dim(GeneID_BRITE.ID)[1], "\n")
+
+#### Writing DESeq2 results table for all genes
+write.table(dataf.DE.results,
+            file = file.path(xargs$outputDir, "DESeq2_results_all_genes.tsv"),
+            sep = "\t", row.names = FALSE, quote = FALSE)
+
+
+
+##################################### Plots ###############################
+
+##### MA plot for the entire RNAseq DataSet
+library(ggplot2)
+library(scales) # for formatting axis graduations
 
 #Handling out of range values
 limit = 4 # max absolute value for y (log2FoldChange) axis
@@ -145,93 +220,6 @@ ggsave(file.path(xargs$outputDir,"MA_plot_all_genes.png"), plot = f1, width = 6,
 
 ##### MA plot for translation genes
 
-
-#-------------------------------------------------------------------------------
-# Geneid geneName equivalence table (from aureowiki)
-#-------------------------------------------------------------------------------
-library(readxl)
-geneName_geneID_eq = read_excel(xargs$geneNames)
-#Renaming colums
-colnames(geneName_geneID_eq) = c("GeneID", "Organism", "GeneName", "Product")
-
-#number of lines
-n = dim(geneName_geneID_eq)[1]
-
-#Removing empty the last three  rows which do not contain gene info
-geneName_geneID_eq = geneName_geneID_eq[1:(n-3),]
-
-#Keeping only genes feature type:  with GeneID like "SAOUHSC_*" 
-geneName_geneID_eq = geneName_geneID_eq[grepl("^SAOUHSC_", geneName_geneID_eq$GeneID), ]
-
-# Rapid check of gene content and differences with our count table
-setdiff(geneName_geneID_eq$GeneID, rownames(count_table))
-
-# annotations present in  in Aureowiki and absent in our table
-# [1] "SAOUHSC_00381a"              "SAOUHSC_00411.1"             "SAOUHSC_00411.2"            
-# [4] "SAOUHSC_00411.3"             "SAOUHSC_00411.4"             "SAOUHSC_00630.1"            
-# [7] "SAOUHSC_01055a"              "SAOUHSC_01139/SAOUHSC_01141" "SAOUHSC_1307a"              
-# [10] "SAOUHSC_1342a"               "SAOUHSC_01761a"              "SAOUHSC_T00046"             
-# [13] "SAOUHSC_T00047"              "SAOUHSC_02512a"              "SAOUHSC_03037a"             
-# [16] "SAOUHSC_3042a"              
-
-# annotations present in our table and absent in Aureowiki
-setdiff(rownames(count_table),geneName_geneID_eq$GeneID)
-# [1] "SAOUHSC_00380"  "SAOUHSC_00595"  "SAOUHSC_00630"  "SAOUHSC_00974"  "SAOUHSC_01057"  "SAOUHSC_01139" 
-# [7] "SAOUHSC_01140"  "SAOUHSC_01141"  "SAOUHSC_01302"  "SAOUHSC_01309"  "SAOUHSC_01342"  "SAOUHSC_01344" 
-# [13] "SAOUHSC_01410"  "SAOUHSC_01648"  "SAOUHSC_01725"  "SAOUHSC_01804"  "SAOUHSC_01881"  "SAOUHSC_01906" 
-# [19] "SAOUHSC_A01910" "SAOUHSC_02231"  "SAOUHSC_02302"  "SAOUHSC_02438"  "SAOUHSC_02440"  "SAOUHSC_02473" 
-# [25] "SAOUHSC_02556"  "SAOUHSC_02633"  "SAOUHSC_02637"  "SAOUHSC_02662"  "SAOUHSC_02673"  "SAOUHSC_02787" 
-# [31] "SAOUHSC_02814"  "SAOUHSC_02903"  "SAOUHSC_03038"  "SAOUHSC_03043" 
-
-
-#Specific verification for the "SAOUHSC_01139/SAOUHSC_01141" entry
-
-#In our table
-dataf.DE.results[grepl("^SAOUHSC_01139", rownames(dataf.DE.results)), ]
-dataf.DE.results[grepl("^SAOUHSC_01141", rownames(dataf.DE.results)), ]
-
-#In the Aureowiki table
-geneName_geneID_eq[grepl("^SAOUHSC_01139/SAOUHSC_01141", geneName_geneID_eq$GeneID), ]
-# # A tibble: 1 × 4
-# GeneID                      Organism           GeneName Product                      
-# <chr>                       <chr>              <chr>    <chr>                        
-#   1 SAOUHSC_01139/SAOUHSC_01141 S. aureus NCTC8325 bshC     Putative cysteine ligase BshC
-
-
-#Adding geneName info to the DESeq2 results table (dataf.DE.results)
-dataf.DE.results.extended = merge(dataf.DE.results, geneName_geneID_eq, by = "GeneID", all.x = TRUE)
-dataf.DE.results.extended$GeneName[dataf.DE.results.extended$GeneID=="SAOUHSC_01139"] = "bshC"
-dataf.DE.results.extended$GeneName[dataf.DE.results.extended$GeneID=="SAOUHSC_01141"] = "bshC"
-
-
-#-------------------------------------------------------------------------------
-# Metabolic pathways for S.aureus genes (from KEGG)
-#-------------------------------------------------------------------------------
-library(KEGGREST)
-
-#List of KEGG Database
-listDatabases()
-
-#Correspondance table between S. aureus (code sao) genes and their KEGG BRITE functional hierarchy ID
-GeneID_BRITE.ID= keggLink(target = "brite", source = "sao") # vector of KEGG BRITE functional hierarchy (with the genes as names)
-
-GeneID = sub(pattern = "^sao:",  replacement = "", names(GeneID_BRITE.ID)) #genes ID without the prefix "sao:"
-
-BRITE.ID = sub(pattern = "^br:",  replacement = "", GeneID_BRITE.ID) #KEGG BRITE functional hierarchy ID without the prefix "br:"
-
-GeneID_BRITE.ID= data.frame(GeneID, BRITE.ID) # table GeneID | KEGG BRITE ID
-
-
-#Aggregating all the hierarchies for each gene, since a gene may be active in many functional pathway
-GeneID_BRITE.ID = aggregate(. ~ GeneID, data = GeneID_BRITE.ID,
-                             FUN = function(x) paste(unique(x), collapse = ";"))
-
-#Adding KEGG BRITE functional hierarchy ID info to the DESeq2 results table (dataf.DE.results.extended)
-
-dataf.DE.results.extended = merge(dataf.DE.results.extended, GeneID_BRITE.ID,
-                                  by= "GeneID", all.x = TRUE)
-
-## MA plot drawing for translation related genes
 #===========> In KEGG database, S. aureus translation genes are grouped in 03 BRITE functional hierarchies
 #===========>sao03011  Ribosome
 #===========>sao03009  Ribosome biogenesis
@@ -240,20 +228,20 @@ dataf.DE.results.extended = merge(dataf.DE.results.extended, GeneID_BRITE.ID,
 
 
 #filter for all translation related genes
-filter_translation_genes = !is.na(dataf.DE.results.extended$BRITE.ID) &
-  (grepl("(^|;)sao03011(;|$)", dataf.DE.results.extended$BRITE.ID) |
-   grepl("(^|;)sao03009(;|$)", dataf.DE.results.extended$BRITE.ID) |
-   grepl("(^|;)sao03016(;|$)", dataf.DE.results.extended$BRITE.ID) |
-   grepl("(^|;)sao03012(;|$)", dataf.DE.results.extended$BRITE.ID))
+filter_translation_genes = !is.na(dataf.DE.results$BRITE.ID) &
+  (grepl("(^|;)sao03011(;|$)", dataf.DE.results$BRITE.ID) |
+   grepl("(^|;)sao03009(;|$)", dataf.DE.results$BRITE.ID) |
+   grepl("(^|;)sao03016(;|$)", dataf.DE.results$BRITE.ID) |
+   grepl("(^|;)sao03012(;|$)", dataf.DE.results$BRITE.ID))
 
 #filter for AA_tRNA_synthetases only
-filter_AA_tRNA_synthetases = !is.na(dataf.DE.results.extended$BRITE.ID) &
-  grepl("(^|;)sao03016(;|$)", dataf.DE.results.extended$BRITE.ID) &
-  grepl("-tRNA synthetase", dataf.DE.results.extended$Product)
+filter_AA_tRNA_synthetases = !is.na(dataf.DE.results$BRITE.ID) &
+  grepl("(^|;)sao03016(;|$)", dataf.DE.results$BRITE.ID) &
+  grepl("-tRNA synthetase", dataf.DE.results$Product)
 
 #Typical genes in translation  
 typical_members = subset(
-  dataf.DE.results.extended,
+  dataf.DE.results,
   GeneName %in% c("pth", "infA", "infB", "infC", "frr", "tsf")
 )
 
@@ -261,10 +249,10 @@ typical_members = subset(
 typical_members$dx <- c(-1.8, 0.8, 0.6, 2.1, 2, 2.5)
 typical_members$dy <- c(-0.8, 1.3, 1.7, 0, 0, -0.7)
 
-f2 = ggplot(data = dataf.DE.results.extended[filter_translation_genes,], 
+f2 = ggplot(data = dataf.DE.results[filter_translation_genes,], 
             aes(x = log(baseMean, base = 2) , y = log2FoldChange, color = signif))+
      geom_point(alpha = 0.8,size = 0.9)+ #Plotting all translation related genes
-     geom_point(data = dataf.DE.results.extended[filter_AA_tRNA_synthetases, ],
+     geom_point(data = dataf.DE.results[filter_AA_tRNA_synthetases, ],
              aes(shape = "AA_tRNA_synthetases"), 
              color = "black", size = 1, stroke = 1.2) + #Plotting AA_tRNA_synthetases genes
     # color scale for significant and non-significant genes

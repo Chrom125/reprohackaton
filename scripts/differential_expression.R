@@ -1,7 +1,6 @@
 
 #!/usr/bin/env Rscript
 
-#Useful libraries
 library(argparse) # For parsing command line arguments
 ############################## Arguments Parsing ################################
 
@@ -16,6 +15,10 @@ parser$add_argument('--countTable', '-c', help= 'Path to the count table file',
                     required= TRUE)
 parser$add_argument('--geneNames', '-g', help= 'Path to the gene names file (Excel format)', 
                     required= TRUE)
+
+parser$add_argument('--geneFunction', '-gF', help= 'Path to the gene KEGG functionnal annotation file', 
+                    required= TRUE)
+
 parser$add_argument('--outputDir', '-o', help= 'Path to the output directory', 
                     required= FALSE, default= './')
 
@@ -24,12 +27,11 @@ xargs = parser$parse_args()
 
 ############################## D.E Analysis ####################################
 ################################################################################
-
+#Useful libraries
 library(ggplot2) # For data visualization
 library(ggrepel)  # For better text label placement in ggplot2
 library(DESeq2) # For differential expression analysis
 library(readxl) # For reading Excel files
-library(KEGGREST) # For accessing KEGG database : KEGG REST API
 library(scales) # For formatting axis graduations
 
 ##################### Step 1 : Data preparation ################################
@@ -162,27 +164,10 @@ dataf.DE.results$GeneName[dataf.DE.results$GeneID=="SAOUHSC_01139"] = "bshC"
 dataf.DE.results$GeneName[dataf.DE.results$GeneID=="SAOUHSC_01141"] = "bshC"
 
 
+#KEGG BRITE Gene functional annotation file
+GeneID_BRITE.ID = read.delim(xargs$geneFunction)
 
-
-#### Adding KEGG BRITE functional hierarchy info to the DESeq2 results table
-#### to specify metabolic pathways for S.aureus (strain NCTC 8325) genes
-#### S. aureus code in KEGG database is "sao"
-
-#Correspondance table between S. aureus (code sao) genes and their KEGG BRITE functional hierarchy ID
-GeneID_BRITE.ID= keggLink(target = "brite", source = "sao") # vector of KEGG BRITE functional hierarchy (with the genes as names)
-
-GeneID = sub(pattern = "^sao:",  replacement = "", names(GeneID_BRITE.ID)) #genes ID without the prefix "sao:"
-
-BRITE.ID = sub(pattern = "^br:",  replacement = "", GeneID_BRITE.ID) #KEGG BRITE functional hierarchy ID without the prefix "br:"
-
-GeneID_BRITE.ID= data.frame(GeneID, BRITE.ID) # table GeneID | KEGG BRITE ID
-
-
-#Aggregating all the hierarchies for each gene, since a gene may be active in many functional pathway
-GeneID_BRITE.ID = aggregate(. ~ GeneID, data = GeneID_BRITE.ID,
-                             FUN = function(x) paste(unique(x), collapse = ";"))
-
-#Adding KEGG BRITE functional hierarchy ID info to the DESeq2 results table (dataf.DE.results)
+#Adding KEGG BRITE functional hierarchy ID to the DESeq2 results table (dataf.DE.results)
 dataf.DE.results = merge(dataf.DE.results, GeneID_BRITE.ID,
                                   by= "GeneID", all.x = TRUE)
 cat("\n About S. aureus strain NCTC8325 gene functional annotation in KEGG BRITE: \n")

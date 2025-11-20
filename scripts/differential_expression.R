@@ -229,6 +229,30 @@ f1 = ggplot(dataf.DE.results, aes(x = baseMean , y = lfc2, color = signif))+
 ggsave(file.path(xargs$outputDir,"MA_plot_all_genes.png"), plot = f1, width = 6, height = 5, dpi = 300)
 
 
+######## Volcano plot
+
+#Info on differential expression for all genes
+dataf.DE.results$diffexpression = 'Not significant'
+dataf.DE.results$diffexpression[dataf.DE.results$log2FoldChange>0 & dataf.DE.results$signif == "Significant"] = "Up-regulated"
+dataf.DE.results$diffexpression[dataf.DE.results$log2FoldChange<0 & dataf.DE.results$signif == "Significant"] = "Down-regulated"
+
+#Top 10 Genes with the most significant differential expression
+top10degs = head(dataf.DE.results[order(dataf.DE.results$padj),],10)
+
+volcano = ggplot(data = dataf.DE.results, aes(x = log2FoldChange, y = -log10(padj),
+                                              col = diffexpression))+
+  geom_vline(xintercept = c(-0.6, 0.6), col = 'gray', linetype = 'dashed')+
+  geom_hline(yintercept = -log10(c(0.05)), col = 'gray', linetype = 'dashed')+
+  geom_point()+
+  scale_color_manual(values = c("blue","grey","red"))+ #color of the diffexpression value
+  scale_x_continuous(breaks = seq(-7,7,1))+
+  geom_label_repel(data = top10degs, aes(label = GeneName), show.legend = FALSE,
+                   min.segment.length = 0)+
+  labs(color = "Differential expression",
+       x = expression(log[2]~"Fold Change"),
+       y = expression("-log"[10]~"(adjusted p-value)"))+ 
+  theme_classic()
+ggsave(file.path(xargs$outputDir,"Volcanoplot.png"), plot = volcano, dpi = 600)
 
 ##### MA plot for translation genes
 

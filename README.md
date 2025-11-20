@@ -22,9 +22,16 @@ conda activate
 
 # Générer le dag graphe :
 ```
+snakemake -S Snakefile --dag | dot -Tpng -o dag.png
 ```
 
 # Lancer l'analyse :
+new
+```
+snakemake -s Snakefile --use-apptainer --singularity-args --cores <number-of-cores>
+```
+
+old
 ```
 snakemake -s Snakefile --use-singularity --singularity-args "--bind /tmp,/home/ubuntu/data" --cores 1
 ```

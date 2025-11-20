@@ -12,10 +12,15 @@ with open(config["sample_table"]) as f:
 
 
 ########################################################## Snakefile rules ############################################
-#Final output: a single counts file with all samples combined
+
+#Final output: DESeq2 results table and plots
 rule all:
     input:
-        "results/featurecounts/processed_counts.txt"
+        ["results/DESeq2_Analysis/DESeq2_results_all_genes.tsv",
+         "results/DESeq2_Analysis/MA_plot_all_genes.png", "results/DESeq2_Analysis/Volcanoplot.png", 
+         "results/DESeq2_Analysis/MA_plot_translation_genes.png"]
+
+
 
 rule download_data:
     output:
@@ -142,3 +147,37 @@ rule processing_counts:
                 #Keeping only Geneid and counts columns
                 line = [line[0]] + line[6:]   #Keeping only Geneid and counts columns
                 outfile.write("\t".join(line) + "\n")
+
+
+rule Genes_KEGG_functional_annotation:
+    output:
+        "results/Gene_KEGG_functional_annotation/KEGG_BRITE_functional_annotation.tsv"
+    log:
+        out = "logs/Gene_KEGG_functional_annotation/Gene_KEGG_functional_annotation.log"
+    container:
+        "https://zenodo.org/records/17665899/files/keggrest.sif?download=1"
+    shell:
+        """
+        Rscript scripts/KEGG_functional_annotation.R\
+        -o results/Gene_KEGG_functional_annotation/ >{log.out} 2>&1
+        """
+
+rule DESeq2_analysis:
+    input:
+        processed_counts = "results/featurecounts/processed_counts.txt"
+        functional_annotation = "results/Gene_KEGG_functional_annotation/KEGG_BRITE_functional_annotation.tsv"
+    output:
+         ["results/DESeq2_Analysis/DESeq2_results_all_genes.tsv",
+         "results/DESeq2_Analysis/MA_plot_all_genes.png", "results/DESeq2_Analysis/Volcanoplot.png", 
+         "results/DESeq2_Analysis/MA_plot_translation_genes.png"]
+    log:
+        out = "logs/DESeq2_analysis/DESeq2_analysis.log"
+        err = "logs/DESeq2_analysis/DESeq2_analysis.err"
+    container:
+        "https://zenodo.org/records/17665500/files/deseq.img?download=1"
+    shell:
+        """
+        Rscript scripts/differential_expression.R -c {input.processed_counts} \
+        -g {config[GeneID_GeneName_file]} -gF {input.functional_annotation} -o results/DESeq2_Analysis >{log.out} 2>{log.err}
+        """
+

@@ -40,5 +40,5 @@ featurecounts:
 
 
 DESeq2_analysis:
-  GeneID_GeneName_file : "Data/GeneSpecificInformation_NCTC8325.xlsx"
+  GeneID_GeneName_file: "Data/GeneSpecificInformation_NCTC8325.xlsx"
 

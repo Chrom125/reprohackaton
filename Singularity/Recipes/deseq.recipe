@@ -40,7 +40,7 @@ From: rocker/tidyverse:3.4.1
 	R -q -e "BiocInstaller::biocLite('DESeq2', suppressUpdates=TRUE, ask=FALSE)"
 
 %test
-    R -q -e "library(DESeq2); sessionInfo()"
+	R -q -e "library(DESeq2); library(ggrepel); library(readxl); library(argparse); sessionInfo()"
 
 %runscript
     exec Rscript "$@"

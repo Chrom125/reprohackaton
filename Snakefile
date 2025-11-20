@@ -164,20 +164,19 @@ rule Genes_KEGG_functional_annotation:
 
 rule DESeq2_analysis:
     input:
-        processed_counts = "results/featurecounts/processed_counts.txt"
+        processed_counts = "results/featurecounts/processed_counts.txt",
         functional_annotation = "results/Gene_KEGG_functional_annotation/KEGG_BRITE_functional_annotation.tsv"
     output:
          ["results/DESeq2_Analysis/DESeq2_results_all_genes.tsv",
          "results/DESeq2_Analysis/MA_plot_all_genes.png", "results/DESeq2_Analysis/Volcanoplot.png", 
          "results/DESeq2_Analysis/MA_plot_translation_genes.png"]
     log:
-        out = "logs/DESeq2_analysis/DESeq2_analysis.log"
+        out = "logs/DESeq2_analysis/DESeq2_analysis.log",
         err = "logs/DESeq2_analysis/DESeq2_analysis.err"
     container:
         "https://zenodo.org/records/17665500/files/deseq.img?download=1"
     shell:
         """
         Rscript scripts/differential_expression.R -c {input.processed_counts} \
-        -g {config[GeneID_GeneName_file]} -gF {input.functional_annotation} -o results/DESeq2_Analysis >{log.out} 2>{log.err}
+        -g {config[DESeq2_analysis][GeneID_GeneName_file]} -gF {input.functional_annotation} -o results/DESeq2_Analysis >{log.out} 2>{log.err}
         """
-

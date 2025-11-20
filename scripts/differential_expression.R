@@ -1,8 +1,17 @@
 
 #!/usr/bin/env Rscript
 
+#Useful libraries
+library(argparse) # For parsing command line arguments
+library(ggrepel)  # For better text label placement in ggplot2
+library(ggplot2) # For data visualization
+library(DESeq2) # For differential expression analysis
+library(readxl) # For reading Excel files
+library(KEGGREST) # For accessing KEGG database : KEGG REST API
+library(scales) # For formatting axis graduations
+
 ############################## Arguments Parsing ################################
-library(argparse)
+
 
 #Defining the arguments parser
 parser = ArgumentParser(description= 'This script performs differential expression analysis using DESeq2 package 
@@ -17,7 +26,6 @@ parser$add_argument('--outputDir', '-o', help= 'Path to the output directory', r
 xargs = parser$parse_args()
 
 ############################## D.E Analysis ####################################
-library(DESeq2)
 ################################################################################
 ##################### Step 1 : Data preparation ################################
 ################################################################################
@@ -102,7 +110,6 @@ dataf.DE.results$signif = ifelse(!is.na(dataf.DE.results$padj) & dataf.DE.result
 
 #### Adding gene name information from Aureowiki
 cat("About gene name information from Aureowiki: S. aureus Strain NCTC8325\n")
-library(readxl)
 geneName_geneID_eq = read_excel(xargs$geneNames)
 #Renaming colums
 colnames(geneName_geneID_eq) = c("GeneID", "Organism", "GeneName", "Product")
@@ -152,8 +159,6 @@ dataf.DE.results$GeneName[dataf.DE.results$GeneID=="SAOUHSC_01141"] = "bshC"
 #### to specify metabolic pathways for S.aureus (strain NCTC 8325) genes
 #### S. aureus code in KEGG database is "sao"
 
-library(KEGGREST) # KEGG REST API 
-
 #Correspondance table between S. aureus (code sao) genes and their KEGG BRITE functional hierarchy ID
 GeneID_BRITE.ID= keggLink(target = "brite", source = "sao") # vector of KEGG BRITE functional hierarchy (with the genes as names)
 
@@ -185,8 +190,6 @@ write.table(dataf.DE.results,
 ##################################### Plots ###############################
 
 ##### MA plot for the entire RNAseq DataSet
-library(ggplot2)
-library(scales) # for formatting axis graduations
 
 #Handling out of range values
 limit = 4 # max absolute value for y (log2FoldChange) axis

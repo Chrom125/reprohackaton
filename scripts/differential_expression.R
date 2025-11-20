@@ -3,30 +3,35 @@
 
 #Useful libraries
 library(argparse) # For parsing command line arguments
-library(ggrepel)  # For better text label placement in ggplot2
-library(ggplot2) # For data visualization
-library(DESeq2) # For differential expression analysis
-library(readxl) # For reading Excel files
-library(KEGGREST) # For accessing KEGG database : KEGG REST API
-library(scales) # For formatting axis graduations
-
 ############################## Arguments Parsing ################################
 
 
 #Defining the arguments parser
-parser = ArgumentParser(description= 'This script performs differential expression analysis using DESeq2 package 
+parser = ArgumentParser(description= 'This script performs differential expression 
+analysis using DESeq2 package 
 and generates MA plots for the entire dataset and translation-related genes')
 
 # Defining the arguments
-parser$add_argument('--countTable', '-c', help= 'Path to the count table file', required= TRUE)
-parser$add_argument('--geneNames', '-g', help= 'Path to the gene names file (Excel format)', required= TRUE)
-parser$add_argument('--outputDir', '-o', help= 'Path to the output directory', required= FALSE, default= './')
+parser$add_argument('--countTable', '-c', help= 'Path to the count table file', 
+                    required= TRUE)
+parser$add_argument('--geneNames', '-g', help= 'Path to the gene names file (Excel format)', 
+                    required= TRUE)
+parser$add_argument('--outputDir', '-o', help= 'Path to the output directory', 
+                    required= FALSE, default= './')
 
 # Parsing the arguments
 xargs = parser$parse_args()
 
 ############################## D.E Analysis ####################################
 ################################################################################
+
+library(ggplot2) # For data visualization
+library(ggrepel)  # For better text label placement in ggplot2
+library(DESeq2) # For differential expression analysis
+library(readxl) # For reading Excel files
+library(KEGGREST) # For accessing KEGG database : KEGG REST API
+library(scales) # For formatting axis graduations
+
 ##################### Step 1 : Data preparation ################################
 ################################################################################
 

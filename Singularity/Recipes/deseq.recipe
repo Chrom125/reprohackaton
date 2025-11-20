@@ -16,7 +16,6 @@ From: rocker/tidyverse:3.4.1
         libxt-dev
 
     # Script dependencies (R 3.4.1 compatible)
-    R -q -e "install.packages('https://cran.r-project.org/src/contrib/Archive/scales/scales_0.4.1.tar.gz', repos=NULL, type='source')"
     R -q -e "install.packages('https://cran.r-project.org/src/contrib/Archive/ggrepel/ggrepel_0.6.5.tar.gz', repos=NULL, type='source')"
     R -q -e "install.packages('https://cran.r-project.org/src/contrib/Archive/readxl/readxl_1.0.0.tar.gz', repos=NULL, type='source')"
 

@@ -18,11 +18,13 @@ rm ./apptainer_1.4.3_amd64.deb
 conda init
 conda install -c bioconda snakemake
 conda activate
+exec bash -l
 ```
 
 # Générer le dag graphe :
 ```
-snakemake -S Snakefile --dag | dot -Tpng -o dag.png
+sudo apt install graphviz
+snakemake -s Snakefile --dag | dot -Tpng -o dag.png
 ```
 
 # Lancer l'analyse :

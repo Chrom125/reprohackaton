@@ -118,9 +118,10 @@ cat("About gene name information from Aureowiki: S. aureus Strain NCTC8325\n")
 geneName_geneID_eq = read_excel(xargs$geneNames)
 #Renaming colums
 colnames(geneName_geneID_eq) = c("GeneID", "Organism", "GeneName", "Product")
-
+#number of lines
+n = dim(geneName_geneID_eq)[1]
 #Total number of features annotated in Aureowiki
-cat("Total number of features annotated in aureowiki", dim(geneName_geneID_eq)[1], "\n")
+cat("Total number of features annotated in aureowiki", n, "\n")
 
 #Removing  the last three empty rows which do not contain gene info
 geneName_geneID_eq = geneName_geneID_eq[1:(n-3),]
@@ -129,28 +130,31 @@ geneName_geneID_eq = geneName_geneID_eq[1:(n-3),]
 geneName_geneID_eq = geneName_geneID_eq[grepl("^SAOUHSC_", geneName_geneID_eq$GeneID), ]
 
 #Total number of genes features annotated in Aureowiki
-cat("Total number of gene features annotated in aureowiki (with GeneID like SAOUHSC_*)  :", dim(geneName_geneID_eq)[1], "\n")
+cat("Total number of gene features annotated in aureowiki (with GeneID like SAOUHSC_*)  :", dim(geneName_geneID_eq)[1], "\n\n")
 
 ##Rapid check of gene content and differences with our count table
 # Gene annotations present in Aureowiki and absent in our count table
-cat("Annotations present in Aureowiki and absent in our count table :\n")
+cat("Annotations present in Aureowiki and absent in our count table :\n\n")
 setdiff(geneName_geneID_eq$GeneID, rownames(count_table))
-
+cat("\n\n")
 # Gene annotations present in our table and absent in Aureowiki
-cat("Annotations present in our count table and absent in Aureowiki :\n")
+cat("Annotations present in our count table and absent in Aureowiki :\n\n")
 setdiff(rownames(count_table),geneName_geneID_eq$GeneID)
-
+cat("\n\n")
 # Specific verification for the "SAOUHSC_01139/SAOUHSC_01141" entry
 cat("The entry 'SAOUHSC_01139/SAOUHSC_01141' in Aureowiki corresponds to two separate genes in our count table:\n")
 
 #In the Aureowiki table
 cat("In Aureowiki table:\n")
-cat(geneName_geneID_eq[grepl("^SAOUHSC_01139/SAOUHSC_01141", geneName_geneID_eq$GeneID), ], "\n")
+as.data.frame(geneName_geneID_eq[grepl("^SAOUHSC_01139/SAOUHSC_01141", geneName_geneID_eq$GeneID), ])
+cat("\n\n")
 
 #In our table
 cat("In our count table:\n")
-cat(count_table[grepl("^SAOUHSC_01139", rownames(count_table)), ], "\n")
-cat(count_table[grepl("^SAOUHSC_01141", rownames(count_table)), ], "\n")
+count_table[grepl("^SAOUHSC_01139", rownames(count_table)), ]
+cat("\n")
+count_table[grepl("^SAOUHSC_01141", rownames(count_table)), ]
+cat("\n")
 
 #### Adding geneName info to the DESeq2 results table (dataf.DE.results)
 dataf.DE.results = merge(dataf.DE.results, geneName_geneID_eq, by = "GeneID", all.x = TRUE)
@@ -181,7 +185,7 @@ GeneID_BRITE.ID = aggregate(. ~ GeneID, data = GeneID_BRITE.ID,
 #Adding KEGG BRITE functional hierarchy ID info to the DESeq2 results table (dataf.DE.results)
 dataf.DE.results = merge(dataf.DE.results, GeneID_BRITE.ID,
                                   by= "GeneID", all.x = TRUE)
-cat("About S. aureus strain NCTC8325 gene functional annotation in KEGG BRITE: \n")
+cat("\n About S. aureus strain NCTC8325 gene functional annotation in KEGG BRITE: \n")
 cat("Total number of genes with KEGG BRITE functional hierarchy annotation : ",
     dim(GeneID_BRITE.ID)[1], "\n")
 

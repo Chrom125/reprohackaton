@@ -77,28 +77,23 @@ rule genome_index:
     log:
         out = "logs/Reference_Genome/reference_genome_index.out",
         err = "logs/Reference_Genome/reference_genome_index.err"
-    container:
-        "https://zenodo.org/records/17425965/files/bowtie-samtools.img?download=1"
     shell:
         """
-        bowtie-build {input} results/Reference_Genome/index_reference >{log.out} 2>{log.err}
+        bowtie2-build {input} results/Reference_Genome/index_reference >{log.out} 2>{log.err}
         """
 
 rule mapping:
     input:
         trimmed = "results/trimming/{sample}_trimmed.fastq",
-        index_reference = expand("results/Reference_Genome/index_reference.{i}.ebwt", i=[1,2,3,4,"rev.1","rev.2"])
+        index_reference = expand("results/Reference_Genome/index_reference.{i}.bt2", i=[1,2,3,4,"rev.1","rev.2"])
     output:
         "results/mapping/{sample}_aligned.bam"
     log:
         mapping = "logs/mapping/bowtie/{sample}_trimmed_mapping.log",
         sorting = "logs/mapping/samtools-sort/{sample}_aligned_sorting.log"
-    container:
-        "https://zenodo.org/records/17425965/files/bowtie-samtools.img?download=1"
     shell:
         """
-        bowtie -p {config[mapping][threads]} -S results/Reference_Genome/index_reference \
-        {input.trimmed} 2>{log.mapping} | samtools sort -@ {config[mapping][threads]} >{output} 2>{log.sorting}
+        bowtie2 -x results/Reference_Genome/index_reference -U {input.trimmed} -p {config[mapping][threads]} 2> {log.mapping} | samtools sort -@ {config[mapping][threads]} -o {output} 2> {log.sorting}
         """
 
 rule featurecounts:

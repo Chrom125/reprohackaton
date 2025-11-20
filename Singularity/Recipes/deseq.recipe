@@ -1,0 +1,46 @@
+Bootstrap: docker
+From: rocker/tidyverse:3.4.1
+
+
+%post
+    apt-get update && apt-get install -y \
+        build-essential \
+        gfortran \
+        libxml2-dev \
+        libssl-dev \
+        libcurl4-openssl-dev \
+        zlib1g-dev \
+        libblas-dev \
+        liblapack-dev \
+        libarmadillo-dev \
+        libpcre3-dev \
+        libxt-dev \
+
+
+# Script dependencies (R 3.4.1 compatible)
+    R -q -e "install.packages('https://cran.r-project.org/src/contrib/Archive/ggrepel/ggrepel_0.6.5.tar.gz', repos=NULL, type='source')"
+    R -q -e "install.packages('https://cran.r-project.org/src/contrib/Archive/readxl/readxl_1.0.0.tar.gz', repos=NULL, type='source')"
+
+# argparse dependencies
+    R -q -e "install.packages('https://cran.r-project.org/src/contrib/Archive/proto/proto_0.3-10.tar.gz', repos=NULL, type='source')"
+    R -q -e "install.packages('https://cran.r-project.org/src/contrib/Archive/getopt/getopt_1.20.0.tar.gz', repos=NULL, type='source')"
+    R -q -e "install.packages('https://cran.r-project.org/src/contrib/Archive/rjson/rjson_0.2.15.tar.gz', repos=NULL, type='source')"
+    R -q -e "install.packages('https://cran.r-project.org/src/contrib/Archive/findpython/findpython_1.0.2.tar.gz', repos=NULL, type='source')"
+    R -q -e "install.packages('https://cran.r-project.org/src/contrib/Archive/argparse/argparse_1.0.4.tar.gz', repos=NULL, type='source')"
+
+# DESeq2 CRAN dependencies (old RcppArmadillo + locfit)
+
+	R -q -e "install.packages('https://cran.r-project.org/src/contrib/Archive/RcppArmadillo/RcppArmadillo_0.7.700.0.0.tar.gz', repos=NULL, type='source')"
+
+	R -q -e "install.packages('https://cran.r-project.org/src/contrib/Archive/locfit/locfit_1.5-9.1.tar.gz', repos=NULL, type='source')"
+
+# Bioconductor 3.5 + DESeq2 1.16.1 dependecies
+	R -q -e "install.packages('BiocInstaller', repos = 'https://bioconductor.org/packages/3.5/bioc')"
+	R -q -e "library(BiocInstaller)"
+	R -q -e "BiocInstaller::biocLite('DESeq2', suppressUpdates=TRUE, ask=FALSE)"
+
+%test
+	R -q -e "library(DESeq2); library(ggrepel); library(readxl); library(argparse); sessionInfo()"
+
+%runscript
+    exec Rscript "$@"

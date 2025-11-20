@@ -28,7 +28,7 @@ snakemake -S Snakefile --dag | dot -Tpng -o dag.png
 # Lancer l'analyse :
 new
 ```
-snakemake -s Snakefile --use-apptainer --singularity-args --cores <number-of-cores>
+snakemake -s Snakefile --use-apptainer --cores <number-of-cores>
 ```
 
 old

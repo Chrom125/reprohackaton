@@ -35,3 +35,10 @@ featurecounts:
   annotation_format: "GFF"
   threads: 4
   s: 1
+
+
+
+
+DESeq2_analysis:
+  GeneID_GeneName_file : "Data/GeneSpecificInformation_NCTC8325.xlsx"
+

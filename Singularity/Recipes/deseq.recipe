@@ -20,11 +20,6 @@ From: rocker/tidyverse:3.4.1
 # Script dependencies (R 3.4.1 compatible)
     R -q -e "install.packages('https://cran.r-project.org/src/contrib/Archive/ggrepel/ggrepel_0.6.5.tar.gz', repos=NULL, type='source')"
     R -q -e "install.packages('https://cran.r-project.org/src/contrib/Archive/readxl/readxl_1.0.0.tar.gz', repos=NULL, type='source')"
-
-# argparse dependencies (PAK)
-    R -q -e "install.packages('https://cran.r-project.org/src/contrib/Archive/pak/pak_0.1.2.tar.gz', repos = NULL, type = 'source')"
-    R -q -e "library(pak)"
-    R -q -e "pak::pkg_install('url::https://cran.r-project.org/src/contrib/argparse_2.3.1.tar.gz')"
   
 # DESeq2 CRAN dependencies (old RcppArmadillo + locfit)
 
@@ -38,7 +33,7 @@ From: rocker/tidyverse:3.4.1
 	R -q -e "BiocInstaller::biocLite('DESeq2', suppressUpdates=TRUE, ask=FALSE)"
 
 %test
-	R -q -e "library(DESeq2); library(ggrepel); library(readxl); library(argparse); sessionInfo()"
+	R -q -e "library(DESeq2); library(ggrepel); library(readxl); sessionInfo()"
 
 %runscript
     exec Rscript "$@"

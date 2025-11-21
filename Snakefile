@@ -174,7 +174,7 @@ rule DESeq2_analysis:
         out = "logs/DESeq2_analysis/DESeq2_analysis.log",
         err = "logs/DESeq2_analysis/DESeq2_analysis.err"
     container:
-        "https://zenodo.org/records/17665500/files/deseq.img?download=1"
+        "https://zenodo.org/records/17669039/files/deseq2-analysis.sif?download=1"
     shell:
         """
         Rscript scripts/differential_expression.R -c {input.processed_counts} \

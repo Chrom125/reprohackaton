@@ -1,24 +1,49 @@
 
 #!/usr/bin/env Rscript
 
+library(argparse) # For parsing command line arguments
 ############################## Arguments Parsing ################################
-library(argparse)
+
 
 #Defining the arguments parser
-parser = ArgumentParser(description= 'This script performs differential expression analysis using DESeq2 package 
+parser = ArgumentParser(description= 'This script performs differential expression 
+analysis using DESeq2 package 
 and generates MA plots for the entire dataset and translation-related genes')
 
 # Defining the arguments
-parser$add_argument('--countTable', '-c', help= 'Path to the count table file', required= TRUE)
-parser$add_argument('--geneNames', '-g', help= 'Path to the gene names file (Excel format)', required= TRUE)
-parser$add_argument('--outputDir', '-o', help= 'Path to the output directory', required= FALSE, default= './')
+parser$add_argument('--countTable', '-c', help= 'Path to the count table file', 
+                    required= TRUE)
+parser$add_argument('--geneNames', '-g', help= 'Path to the gene names file (Excel format)', 
+                    required= TRUE)
+
+parser$add_argument('--geneFunction', '-gF', help= 'Path to the gene KEGG functionnal annotation file', 
+                    required= TRUE)
+
+parser$add_argument('--outputDir', '-o', help= 'Path to the output directory', 
+                    required= FALSE, default= './')
 
 # Parsing the arguments
-xargs = parser$parse_args()
+if (interactive()) {
+    # Valeurs par défaut pour travail interactif (adaptez les chemins)
+    xargs = list(
+      countTable = "results/featurecounts/processed_counts.txt",
+      geneNames  = "GeneSpecificInformation_NCTC8325.xlsx",
+      geneFunction = "KEGG_BRITE_functional_annotation.tsv",
+      outputDir  = "./results/DESeq2_bowtie2/"
+    )
+} else {
+    xargs = parser$parse_args()
+}
 
 ############################## D.E Analysis ####################################
-library(DESeq2)
 ################################################################################
+#Useful libraries
+library(ggplot2) # For data visualization
+library(ggrepel)  # For better text label placement in ggplot2
+library(DESeq2) # For differential expression analysis
+library(readxl) # For reading Excel files
+library(scales) # For formatting axis graduations
+
 ##################### Step 1 : Data preparation ################################
 ################################################################################
 
@@ -102,13 +127,13 @@ dataf.DE.results$signif = ifelse(!is.na(dataf.DE.results$padj) & dataf.DE.result
 
 #### Adding gene name information from Aureowiki
 cat("About gene name information from Aureowiki: S. aureus Strain NCTC8325\n")
-library(readxl)
 geneName_geneID_eq = read_excel(xargs$geneNames)
 #Renaming colums
 colnames(geneName_geneID_eq) = c("GeneID", "Organism", "GeneName", "Product")
-
+#number of lines
+n = dim(geneName_geneID_eq)[1]
 #Total number of features annotated in Aureowiki
-cat("Total number of features annotated in aureowiki", dim(geneName_geneID_eq)[1], "\n")
+cat("Total number of features annotated in aureowiki", n, "\n")
 
 #Removing  the last three empty rows which do not contain gene info
 geneName_geneID_eq = geneName_geneID_eq[1:(n-3),]
@@ -117,28 +142,31 @@ geneName_geneID_eq = geneName_geneID_eq[1:(n-3),]
 geneName_geneID_eq = geneName_geneID_eq[grepl("^SAOUHSC_", geneName_geneID_eq$GeneID), ]
 
 #Total number of genes features annotated in Aureowiki
-cat("Total number of gene features annotated in aureowiki (with GeneID like SAOUHSC_*)  :", dim(geneName_geneID_eq)[1], "\n")
+cat("Total number of gene features annotated in aureowiki (with GeneID like SAOUHSC_*)  :", dim(geneName_geneID_eq)[1], "\n\n")
 
 ##Rapid check of gene content and differences with our count table
 # Gene annotations present in Aureowiki and absent in our count table
-cat("Annotations present in Aureowiki and absent in our count table :\n")
+cat("Annotations present in Aureowiki and absent in our count table :\n\n")
 setdiff(geneName_geneID_eq$GeneID, rownames(count_table))
-
+cat("\n\n")
 # Gene annotations present in our table and absent in Aureowiki
-cat("Annotations present in our count table and absent in Aureowiki :\n")
+cat("Annotations present in our count table and absent in Aureowiki :\n\n")
 setdiff(rownames(count_table),geneName_geneID_eq$GeneID)
-
+cat("\n\n")
 # Specific verification for the "SAOUHSC_01139/SAOUHSC_01141" entry
 cat("The entry 'SAOUHSC_01139/SAOUHSC_01141' in Aureowiki corresponds to two separate genes in our count table:\n")
 
 #In the Aureowiki table
 cat("In Aureowiki table:\n")
-cat(geneName_geneID_eq[grepl("^SAOUHSC_01139/SAOUHSC_01141", geneName_geneID_eq$GeneID), ], "\n")
+as.data.frame(geneName_geneID_eq[grepl("^SAOUHSC_01139/SAOUHSC_01141", geneName_geneID_eq$GeneID), ])
+cat("\n\n")
 
 #In our table
 cat("In our count table:\n")
-cat(count_table[grepl("^SAOUHSC_01139", rownames(count_table)), ], "\n")
-cat(count_table[grepl("^SAOUHSC_01141", rownames(count_table)), ], "\n")
+count_table[grepl("^SAOUHSC_01139", rownames(count_table)), ]
+cat("\n")
+count_table[grepl("^SAOUHSC_01141", rownames(count_table)), ]
+cat("\n")
 
 #### Adding geneName info to the DESeq2 results table (dataf.DE.results)
 dataf.DE.results = merge(dataf.DE.results, geneName_geneID_eq, by = "GeneID", all.x = TRUE)
@@ -146,32 +174,13 @@ dataf.DE.results$GeneName[dataf.DE.results$GeneID=="SAOUHSC_01139"] = "bshC"
 dataf.DE.results$GeneName[dataf.DE.results$GeneID=="SAOUHSC_01141"] = "bshC"
 
 
+#KEGG BRITE Gene functional annotation file
+GeneID_BRITE.ID = read.delim(xargs$geneFunction)
 
-
-#### Adding KEGG BRITE functional hierarchy info to the DESeq2 results table
-#### to specify metabolic pathways for S.aureus (strain NCTC 8325) genes
-#### S. aureus code in KEGG database is "sao"
-
-library(KEGGREST) # KEGG REST API 
-
-#Correspondance table between S. aureus (code sao) genes and their KEGG BRITE functional hierarchy ID
-GeneID_BRITE.ID= keggLink(target = "brite", source = "sao") # vector of KEGG BRITE functional hierarchy (with the genes as names)
-
-GeneID = sub(pattern = "^sao:",  replacement = "", names(GeneID_BRITE.ID)) #genes ID without the prefix "sao:"
-
-BRITE.ID = sub(pattern = "^br:",  replacement = "", GeneID_BRITE.ID) #KEGG BRITE functional hierarchy ID without the prefix "br:"
-
-GeneID_BRITE.ID= data.frame(GeneID, BRITE.ID) # table GeneID | KEGG BRITE ID
-
-
-#Aggregating all the hierarchies for each gene, since a gene may be active in many functional pathway
-GeneID_BRITE.ID = aggregate(. ~ GeneID, data = GeneID_BRITE.ID,
-                             FUN = function(x) paste(unique(x), collapse = ";"))
-
-#Adding KEGG BRITE functional hierarchy ID info to the DESeq2 results table (dataf.DE.results)
+#Adding KEGG BRITE functional hierarchy ID to the DESeq2 results table (dataf.DE.results)
 dataf.DE.results = merge(dataf.DE.results, GeneID_BRITE.ID,
                                   by= "GeneID", all.x = TRUE)
-cat("About S. aureus strain NCTC8325 gene functional annotation in KEGG BRITE: \n")
+cat("\n About S. aureus strain NCTC8325 gene functional annotation in KEGG BRITE: \n")
 cat("Total number of genes with KEGG BRITE functional hierarchy annotation : ",
     dim(GeneID_BRITE.ID)[1], "\n")
 
@@ -185,8 +194,6 @@ write.table(dataf.DE.results,
 ##################################### Plots ###############################
 
 ##### MA plot for the entire RNAseq DataSet
-library(ggplot2)
-library(scales) # for formatting axis graduations
 
 #Handling out of range values
 limit = 4 # max absolute value for y (log2FoldChange) axis
@@ -217,6 +224,30 @@ f1 = ggplot(dataf.DE.results, aes(x = baseMean , y = lfc2, color = signif))+
 ggsave(file.path(xargs$outputDir,"MA_plot_all_genes.png"), plot = f1, width = 6, height = 5, dpi = 300)
 
 
+######## Volcano plot
+
+#Info on differential expression for all genes
+dataf.DE.results$diffexpression = 'Not significant'
+dataf.DE.results$diffexpression[dataf.DE.results$log2FoldChange>0 & dataf.DE.results$signif == "Significant"] = "Up-regulated"
+dataf.DE.results$diffexpression[dataf.DE.results$log2FoldChange<0 & dataf.DE.results$signif == "Significant"] = "Down-regulated"
+
+#Top 10 Genes with the most significant differential expression
+top10degs = head(dataf.DE.results[order(dataf.DE.results$padj),],10)
+
+volcano = ggplot(data = dataf.DE.results, aes(x = log2FoldChange, y = -log10(padj),
+                                              col = diffexpression))+
+  geom_vline(xintercept = c(-0.6, 0.6), col = 'gray', linetype = 'dashed')+
+  geom_hline(yintercept = -log10(c(0.05)), col = 'gray', linetype = 'dashed')+
+  geom_point()+
+  scale_color_manual(values = c("blue","grey","red"))+ #color of the diffexpression value
+  scale_x_continuous(breaks = seq(-7,7,1))+
+  geom_label_repel(data = top10degs, aes(label = GeneName), show.legend = FALSE,
+                   min.segment.length = 0)+
+  labs(color = "Differential expression",
+       x = expression(log[2]~"Fold Change"),
+       y = expression("-log"[10]~"(adjusted p-value)"))+ 
+  theme_classic()
+ggsave(file.path(xargs$outputDir,"Volcanoplot.png"), plot = volcano, dpi = 600)
 
 ##### MA plot for translation genes
 

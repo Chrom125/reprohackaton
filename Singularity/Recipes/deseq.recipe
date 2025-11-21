@@ -15,6 +15,7 @@ From: rocker/tidyverse:3.4.1
         libarmadillo-dev \
         libpcre3-dev \
         libxt-dev \
+		python-minimal \
 
 
 # Script dependencies (R 3.4.1 compatible)

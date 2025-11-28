@@ -33,7 +33,7 @@ new
 snakemake -s Snakefile --use-apptainer --cores <number-of-cores>
 ```
 
-old
-```
-snakemake -s Snakefile --use-singularity --singularity-args "--bind /tmp,/home/ubuntu/data" --cores 1
-```
+new2
+'''
+snakemake -s Snakefile --use-singularity --singularity-args "--bind $(pwd)" --cores 1
+'''

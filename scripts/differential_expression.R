@@ -1,30 +1,5 @@
 
 #!/usr/bin/env Rscript
-
-library(argparse) # For parsing command line arguments
-############################## Arguments Parsing ################################
-
-
-#Defining the arguments parser
-parser = ArgumentParser(description= 'This script performs differential expression 
-analysis using DESeq2 package 
-and generates MA plots for the entire dataset and translation-related genes')
-
-# Defining the arguments
-parser$add_argument('--countTable', '-c', help= 'Path to the count table file', 
-                    required= TRUE)
-parser$add_argument('--geneNames', '-g', help= 'Path to the gene names file (Excel format)', 
-                    required= TRUE)
-
-parser$add_argument('--geneFunction', '-gF', help= 'Path to the gene KEGG functionnal annotation file', 
-                    required= TRUE)
-
-parser$add_argument('--outputDir', '-o', help= 'Path to the output directory', 
-                    required= FALSE, default= './')
-
-# Parsing the arguments
-xargs = parser$parse_args()
-
 ############################## D.E Analysis ####################################
 ################################################################################
 #Useful libraries
@@ -34,11 +9,15 @@ library(DESeq2) # For differential expression analysis
 library(readxl) # For reading Excel files
 library(scales) # For formatting axis graduations
 
+sessionInfo()
+packageVersion("ggplot2")
+packageVersion("ggrepel")
+
 ##################### Step 1 : Data preparation ################################
 ################################################################################
 
 ##### Count table
-count_table = read.table(file = xargs$countTable, header = T, sep = "\t", 
+count_table = read.table(file = "results/featurecounts/processed_counts.txt", header = T, sep = "\t", 
                          row.names = 1)
                            
 #Total number of genes
@@ -78,7 +57,7 @@ f1 = f1 + geom_text_repel(aes(label = name), size = 3, nudge_x = 0.5,
                           nudge_y = 0.5,        
                           force = 2,
                           segment.size = 0.2 )
-ggsave(file.path(xargs$outputDir,"PCA_plot.png"), plot = f1, width = 6, height = 5, dpi = 600)
+ggsave("results/DESeq2_Analysis/PCA_plot.png", plot = f1, width = 6, height = 5, dpi = 600)
 
 
 ################################################################################
@@ -117,7 +96,7 @@ dataf.DE.results$signif = ifelse(!is.na(dataf.DE.results$padj) & dataf.DE.result
 
 #### Adding gene name information from Aureowiki
 cat("About gene name information from Aureowiki: S. aureus Strain NCTC8325\n")
-geneName_geneID_eq = read_excel(xargs$geneNames)
+geneName_geneID_eq = read_excel("Data/GeneSpecificInformation_NCTC8325.xlsx")
 #Renaming colums
 colnames(geneName_geneID_eq) = c("GeneID", "Organism", "GeneName", "Product")
 #number of lines
@@ -165,20 +144,15 @@ dataf.DE.results$GeneName[dataf.DE.results$GeneID=="SAOUHSC_01141"] = "bshC"
 
 
 #KEGG BRITE Gene functional annotation file
-GeneID_BRITE.ID = read.delim(xargs$geneFunction)
+GeneID_BRITE.ID = read.delim("results/Gene_KEGG_functional_annotation/KEGG_BRITE_functional_annotation.tsv")
 
 #Adding KEGG BRITE functional hierarchy ID to the DESeq2 results table (dataf.DE.results)
-dataf.DE.results = merge(dataf.DE.results, GeneID_BRITE.ID,
-                                  by= "GeneID", all.x = TRUE)
+dataf.DE.results = merge(dataf.DE.results, GeneID_BRITE.ID, by= "GeneID", all.x = TRUE)
 cat("\n About S. aureus strain NCTC8325 gene functional annotation in KEGG BRITE: \n")
-cat("Total number of genes with KEGG BRITE functional hierarchy annotation : ",
-    dim(GeneID_BRITE.ID)[1], "\n")
+cat("Total number of genes with KEGG BRITE functional hierarchy annotation : ", dim(GeneID_BRITE.ID)[1], "\n")
 
 #### Writing DESeq2 results table for all genes
-write.table(dataf.DE.results,
-            file = file.path(xargs$outputDir, "DESeq2_results_all_genes.tsv"),
-            sep = "\t", row.names = FALSE, quote = FALSE)
-
+write.table(dataf.DE.results, file = "results/DESeq2_Analysis/DESeq2_results_all_genes.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
 
 
 ##################################### Plots ###############################
@@ -211,8 +185,7 @@ f1 = ggplot(dataf.DE.results, aes(x = baseMean , y = lfc2, color = signif))+
           y = expression(log[2]~"fold change"))+theme(legend.position = "none")
 
 # Saving
-ggsave(file.path(xargs$outputDir,"MA_plot_all_genes.png"), plot = f1, width = 6, height = 5, dpi = 300)
-
+ggsave("results/DESeq2_Analysis/MA_plot_all_genes.png", plot = f1, width = 6, height = 5, dpi = 300)
 
 ######## Volcano plot
 
@@ -231,13 +204,12 @@ volcano = ggplot(data = dataf.DE.results, aes(x = log2FoldChange, y = -log10(pad
   geom_point()+
   scale_color_manual(values = c("blue","grey","red"))+ #color of the diffexpression value
   scale_x_continuous(breaks = seq(-7,7,1))+
-  geom_label_repel(data = top10degs, aes(label = GeneName), show.legend = FALSE,
-                   min.segment.length = 0)+
+  geom_text(data = top10degs, aes(label = GeneName), check_overlap = TRUE) +
   labs(color = "Differential expression",
        x = expression(log[2]~"Fold Change"),
        y = expression("-log"[10]~"(adjusted p-value)"))+ 
   theme_classic()
-ggsave(file.path(xargs$outputDir,"Volcanoplot.png"), plot = volcano, dpi = 600)
+ggsave("results/DESeq2_Analysis/Volcanoplot.png", plot = volcano, dpi = 600)
 
 ##### MA plot for translation genes
 
@@ -246,7 +218,6 @@ ggsave(file.path(xargs$outputDir,"Volcanoplot.png"), plot = volcano, dpi = 600)
 #===========>sao03009  Ribosome biogenesis
 #===========>sao03016  Transfer RNA biogenesis
 #===========>sao03012  Translation factors
-
 
 #filter for all translation related genes
 filter_translation_genes = !is.na(dataf.DE.results$BRITE.ID) &
@@ -290,7 +261,7 @@ f2 = ggplot(data = dataf.DE.results[filter_translation_genes,],
       data = typical_members,
       aes(x = log(baseMean, base = 2)+0.05, y = log2FoldChange,
           xend = log(baseMean, base = 2) + dx, yend = log2FoldChange + dy),
-          linewidth = 0.8, color = "black")+
+          size = 0.8, color = "black")+
   
      #Annotation text for typical translation genes
      geom_text(
@@ -304,13 +275,8 @@ f2 = ggplot(data = dataf.DE.results[filter_translation_genes,],
      #Axis names + suppression of legend titles
      labs(
        x = expression(log[2]~"base Mean"),
-       y = expression(log[2]~"fold change"), shape = NULL, color = NULL)+
-  
-     #Plot Graphic theme
-     theme_classic() +
-     theme(
-      panel.border = element_rect(color = "black", linewidth = 2.5))
+       y = expression(log[2]~"fold change"), shape = NULL, color = NULL)
 
     
 # Saving
-ggsave(file.path(xargs$outputDir,"MA_plot_translation_genes.png"), plot = f2, width = 6, height = 5, dpi = 300)
+ggsave("results/DESeq2_Analysis/MA_plot_translation_genes.png", plot = f2, width = 6, height = 5, dpi = 300)

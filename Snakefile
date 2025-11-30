@@ -177,6 +177,5 @@ rule DESeq2_analysis:
         "https://zenodo.org/records/17669039/files/deseq2-analysis.sif?download=1"
     shell:
         """
-        Rscript scripts/differential_expression.R -c {input.processed_counts} \
-        -g {config[DESeq2_analysis][GeneID_GeneName_file]} -gF {input.functional_annotation} -o results/DESeq2_Analysis >{log.out} 2>{log.err}
+        Rscript scripts/differential_expression.R >{log.out} 2>{log.err}
         """

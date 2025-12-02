@@ -28,12 +28,6 @@ snakemake -s Snakefile --dag | dot -Tpng -o dag.png
 ```
 
 # Lancer l'analyse :
-new
-```
-snakemake -s Snakefile --use-apptainer --cores <number-of-cores>
-```
-
-new2
 '''
-snakemake -s Snakefile --use-singularity --singularity-args "--bind $(pwd)" --cores 1
+snakemake -s Snakefile --use-singularity --singularity-args "--bind $(pwd)" --cores <number_of_cores>
 '''

@@ -16,8 +16,7 @@ with open(config["sample_table"]) as f:
 #Final output: DESeq2 results table and plots
 rule all:
     input:
-        ["results/DESeq2_Analysis/DESeq2_results_all_genes.tsv",
-         "results/DESeq2_Analysis/MA_plot_all_genes.png", "results/DESeq2_Analysis/Volcanoplot.png", 
+        ["results/DESeq2_Analysis/MA_plot_all_genes.png", "results/DESeq2_Analysis/Volcanoplot.png", 
          "results/DESeq2_Analysis/MA_plot_translation_genes.png"]
 
 
@@ -167,9 +166,7 @@ rule DESeq2_analysis:
         processed_counts = "results/featurecounts/processed_counts.txt",
         functional_annotation = "results/Gene_KEGG_functional_annotation/KEGG_BRITE_functional_annotation.tsv"
     output:
-         ["results/DESeq2_Analysis/DESeq2_results_all_genes.tsv",
-         "results/DESeq2_Analysis/MA_plot_all_genes.png", "results/DESeq2_Analysis/Volcanoplot.png", 
-         "results/DESeq2_Analysis/MA_plot_translation_genes.png"]
+         "results/DESeq2_Analysis/DESeq2_results_all_genes.tsv"
     log:
         out = "logs/DESeq2_analysis/DESeq2_analysis.log",
         err = "logs/DESeq2_analysis/DESeq2_analysis.err"
@@ -178,4 +175,21 @@ rule DESeq2_analysis:
     shell:
         """
         Rscript scripts/differential_expression.R >{log.out} 2>{log.err}
+        """
+
+rule plots:
+    input:
+        deseq_results = "results/DESeq2_Analysis/DESeq2_results_all_genes.tsv",
+    output:
+         ["results/DESeq2_Analysis/MA_plot_all_genes.png", "results/DESeq2_Analysis/Volcanoplot.png", 
+         "results/DESeq2_Analysis/MA_plot_translation_genes.png"]
+    log:
+        out = "logs/plots/plots.log",
+        err = "logs/plots/plots.err"
+    container:
+        "https://zenodo.org/records/17798452/files/data_viz_tools_suite.sif?download=1"
+    shell:
+        """
+        Rscript scripts/plots_differential_expression_results.R -dR "{input.deseq_results}"\
+        -o results/DESeq2_Analysis >{log.out} 2>{log.err}
         """

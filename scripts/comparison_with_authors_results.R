@@ -18,6 +18,7 @@ library(ggplot2) # For Data Visualisation
 library(ComplexHeatmap) #Library for Upset plot drawing
 library(ragg) #Library to export plots
 library(patchwork) # For plot organization
+library(ggpubr) # For statistical comparisons in ggplot2
 
 ###### Collecting DESeq results for differentially expressed genes
 
@@ -59,59 +60,89 @@ dataf.DE.results.all = rbind(authors[,c("GeneID", "baseMean","log2FoldChange","p
 dataf.DE.results.all$Status = ifelse(dataf.DE.results.all$padj<padj.cutoff, 
                                      "Differentially Expressed", "Not Differentially Expressed")
 
-#Boxplot of baseMean for all genes (Us vs Authors)
 
+
+############################# BOXPLOTS with statistical comparisons(wilcoxon test)
+
+#Groups to compare
+groups <- list(c("Us", "Authors"))
+
+#Significance thresholds
+significance_tresholds <- list(
+  cutpoints = c(0,     0.0001,  0.001,  0.01,  0.05,   1),
+  symbols   = c("****", "***",   "**",   "*",   "ns")
+)
+
+#Boxplot BaseMean All Genes
 p1 = ggplot(dataf.DE.results.all,
-                 aes(x = From, y = baseMean)) +
+            aes(x = baseMean, y = From)) +
   geom_boxplot(outlier.size = 0.5, color = "black", fill = "pink") +
-  scale_y_log10(labels = trans_format("log10", math_format(10^.x))) +
-  coord_flip() +
-  labs(x = NULL,
-       y = "Mean of normalized counts",
+  scale_x_log10(labels = trans_format("log10", math_format(10^.x))) +
+  
+  #wilcoxon test comparisons
+  stat_compare_means(
+    method = "wilcox.test", 
+    comparisons = groups,
+    symnum.args = significance_tresholds   
+  ) + 
+  
+  labs(y = NULL,
+       x = "Mean of normalized counts",
        title = "All genes (Us vs Authors)") +
   theme_bw()
 
-#Boxplot of baseMean for differentially expressed (D.E)
-#genes (Us vs Authors)
-
+#Boxplot BaseMean DE Genes
 p2 = ggplot(subset(dataf.DE.results.all, Status == "Differentially Expressed"),
-            aes(x = From, y = baseMean)) +
+            aes(x = baseMean, y = From)) +
   geom_boxplot(outlier.size = 0.5, color = "black", fill = "grey") +
-  scale_y_log10(labels = trans_format("log10", math_format(10^.x))) +
-  coord_flip() +
-  labs(x = NULL,
-       y = "Mean of normalized counts",
+  scale_x_log10(labels = trans_format("log10", math_format(10^.x))) +
+  
+  stat_compare_means(
+    method = "wilcox.test", 
+    comparisons = groups,
+    symnum.args = significance_tresholds   
+  ) +
+  
+  labs(y = NULL,
+       x = "Mean of normalized counts",
        title = "D.E genes (Us vs Authors) ") +
   theme_bw()
 
-
-#Boxplot of logFC for all genes (Us vs Authors)
-
+#Boxplot LogFC All Genes
 p3 = ggplot(dataf.DE.results.all,
-            aes(x = From, y = log2FoldChange)) +
+            aes(x = log2FoldChange, y = From)) +
   geom_boxplot(outlier.size = 0.5, color = "black", fill = "pink")+
-  coord_flip() +
-  labs(x = NULL,
-       y = expression(log[2]~"Fold Change"),
+  
+  stat_compare_means(
+    method = "wilcox.test", 
+    comparisons = groups,
+    symnum.args = significance_tresholds   
+  ) +
+  
+  labs(y = NULL,
+       x = expression(log[2]~"Fold Change"),
        title = "All genes (Us vs Authors)") +
   theme_bw()
 
-
-
-#Boxplot of logFC for D.E (Us vs Authors)
+#Boxplot LogFC DE Genes
 p4 = ggplot(subset(dataf.DE.results.all, Status=="Differentially Expressed"),
-            aes(x = From, y = log2FoldChange)) +
+            aes(x = log2FoldChange, y = From)) +
   geom_boxplot(outlier.size = 0.5, color = "black", fill = "grey") +
-  coord_flip() +
-  labs(x = NULL,
-       y = expression(log[2]~"Fold Change"),
+  
+  stat_compare_means(
+    method = "wilcox.test", 
+    comparisons = groups,
+    symnum.args = significance_tresholds  
+  ) +
+  
+  labs(y = NULL,
+       x = expression(log[2]~"Fold Change"),
        title ="D.E genes (Us vs Authors)") +
   theme_bw()
 
-pf = ((p1+p3)/(p2+p4)) + plot_annotation (tag_levels = "a", tag_suffix = ".")
-
-ggsave(file.path(xargs$outputDir, "Boxplot_LFC_BaseMean_All_genes_and_DE_genes_Us_vs_Authors.png"),
-       plot = pf, dpi = 600)
+# Saving the four boxplots in a single figure
+pf = ((p1+p3)/(p2+p4)) + plot_annotation(tag_levels = "a", tag_suffix = ".")
+ggsave(file.path(xargs$outputDir, "Boxplot_LFC_BaseMean_All_genes_and_DE_genes_Us_vs_Authors.png"), plot = pf, dpi = 600)
 
 
 ################### ANALYSIS of overlaps between our results and authors's

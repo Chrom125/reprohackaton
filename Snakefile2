@@ -32,7 +32,7 @@ rule DESeq2_analysis:
         out = "logs/comparison_with_authors/DESeq2_analysis_authors.log"
     shell:
         """
-        Rscript scripts/differential_expression_authors.R 
+        Rscript scripts/differential_expression_authors.R >{log.out} 2>&1
         """
 
 rule comparison:
@@ -52,10 +52,5 @@ rule comparison:
         -aR "{input.DESeq2_results_authors}" \
         -rR "{input.DESeq2_results_us}" \
         -o "results/comparison_with_authors/"
-        > {log.out} 2>&1
+        >{log.out} 2>&1
         """
-
-
-
-
-

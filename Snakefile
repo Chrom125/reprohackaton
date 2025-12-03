@@ -27,7 +27,7 @@ rule download_data:
     log:
         out = "logs/download_data/{sample}.log"
     container:
-        "https://zenodo.org/records/17423176/files/sratoolkit-fasterq-dump.sif"
+        "https://zenodo.org/records/17423476/files/sratoolkit-fasterq-dump.sif?download=1"
     params: 
         read_data = lambda wildcards : sample_to_sra_id[wildcards.sample]
     shell:

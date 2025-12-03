@@ -1,0 +1,61 @@
+configfile: "config2.yaml"
+
+
+rule all:
+    input:
+        ["results/comparison_with_authors/UpSet_plot_for_genes_sets.png",
+         "results/comparison_with_authors/Boxplot_LFC_BaseMean_All_genes_and_DE_genes_Us_vs_Authors.png"]
+
+
+rule download_authors_counts:
+    output:
+        "results/comparison_with_authors/authors_counts.xls"
+    log:
+        out = "logs/comparison_with_authors/download_authors_counts.log"
+    params:
+        archive = "results/comparison_with_authors/authors_counts.xls.gz"
+    shell:
+        """
+        wget -O "{params.archive}" "{config[download_authors_counts][link]}" 2> {log.out} \
+        && gunzip -c "{params.archive}" > {output}
+        """
+
+
+rule DESeq2_analysis:
+    input:
+        "results/comparison_with_authors/authors_counts.xls"
+    output:
+        "results/comparison_with_authors/DESeq2_results_authors.tsv"
+    container:
+        "https://zenodo.org/records/17669039/files/deseq2-analysis.sif?download=1"
+    log:
+        out = "logs/comparison_with_authors/DESeq2_analysis_authors.log"
+    shell:
+        """
+        Rscript scripts/differential_expression_authors.R 
+        """
+
+rule comparison:
+    input:
+        DESeq2_results_authors = "results/comparison_with_authors/DESeq2_results_authors.tsv",
+        DESeq2_results_us = "results/DESeq2_Analysis/DESeq2_results_all_genes.tsv"
+    output:
+        ["results/comparison_with_authors/UpSet_plot_for_genes_sets.png",
+         "results/comparison_with_authors/Boxplot_LFC_BaseMean_All_genes_and_DE_genes_Us_vs_Authors.png"]
+    container:
+        "https://zenodo.org/records/17798452/files/data_viz_tools_suite.sif?download=1"
+    log:
+        out = "logs/comparison_with_authors/comparison_with_authors.log"
+    shell:
+        """
+        Rscript scripts/comparison_with_authors_results.R \
+        -aR "{input.DESeq2_results_authors}" \
+        -rR "{input.DESeq2_results_us}" \
+        -o "results/comparison_with_authors/"
+        > {log.out} 2>&1
+        """
+
+
+
+
+

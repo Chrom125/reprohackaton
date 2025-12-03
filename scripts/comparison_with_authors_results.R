@@ -24,11 +24,8 @@ library(patchwork) # For plot organization
 
 ###### Results from authors 
 
-#Counts and DE analysis results from the authors
-GSE139659_IPvsctrl.complete = read.delim(xargs$authorsResults, stringsAsFactors=TRUE)
-
-dataf.DE.results.authors = GSE139659_IPvsctrl.complete[1:2967,c(2,12:17)]
-colnames(dataf.DE.results.authors)[1] = "GeneID" 
+#DE analysis results from the authors
+dataf.DE.results.authors = read.delim(xargs$authorsResults, stringsAsFactors=TRUE)
 
 #Differentially expressed genes
 padj.cutoff = 0.05
@@ -189,264 +186,264 @@ draw(f1,column_title = "Overlap of Differentially Expressed Genes (Ours vs. Auth
 dev.off()
 
 
-################# Comparison of logFC, baseMean, padj between gene sets of diffe-
-################# rentially expressed genes
-# "Up-regulated (Us only)",
-# "Up-regulated (Authors only)",
-# "Down-regulated (Us only)",
-# "Down-regulated (Authors only)",
-# "Up-regulated (Us & Authors)",
-# "Down-regulated (Us & Authors)",
-# "Up-regulated (Us) & Down-regulated (Authors)",
-# "Down-regulated (Us) & Up-regulated (Authors)"
+# ################# Comparison of logFC, baseMean, padj between gene sets of diffe-
+# ################# rentially expressed genes
+# # "Up-regulated (Us only)",
+# # "Up-regulated (Authors only)",
+# # "Down-regulated (Us only)",
+# # "Down-regulated (Authors only)",
+# # "Up-regulated (Us & Authors)",
+# # "Down-regulated (Us & Authors)",
+# # "Up-regulated (Us) & Down-regulated (Authors)",
+# # "Down-regulated (Us) & Up-regulated (Authors)"
 
-### Up-regulated genes from authors that aren't differentially expressed for us
-# GenesID
-ID.up.reg.genes.authors.not.DE.for.us = DE.genes.set$GeneID[DE.genes.set$up.regulated.authors==1 &
-                                              DE.genes.set$down.regulated.authors==0 &
-                                              DE.genes.set$up.regulated.us == 0 &
-                                              DE.genes.set$down.regulated.us == 0]
+# ### Up-regulated genes from authors that aren't differentially expressed for us
+# # GenesID
+# ID.up.reg.genes.authors.not.DE.for.us = DE.genes.set$GeneID[DE.genes.set$up.regulated.authors==1 &
+#                                               DE.genes.set$down.regulated.authors==0 &
+#                                               DE.genes.set$up.regulated.us == 0 &
+#                                               DE.genes.set$down.regulated.us == 0]
 
-# logFC, padj, baseMean from authors
-up.reg.genes.authors.not.DE.for.us = differentially_expressed_genes.authors[differentially_expressed_genes.authors$GeneID
-                                                                            %in% ID.up.reg.genes.authors.not.DE.for.us, 
-                                                                            c("GeneID","baseMean","log2FoldChange","padj")]
-up.reg.genes.authors.not.DE.for.us$From = rep("Authors", length(ID.up.reg.genes.authors.not.DE.for.us))
-up.reg.genes.authors.not.DE.for.us$Status = rep("Up-regulated (Authors only)", length(ID.up.reg.genes.authors.not.DE.for.us))
+# # logFC, padj, baseMean from authors
+# up.reg.genes.authors.not.DE.for.us = differentially_expressed_genes.authors[differentially_expressed_genes.authors$GeneID
+#                                                                             %in% ID.up.reg.genes.authors.not.DE.for.us, 
+#                                                                             c("GeneID","baseMean","log2FoldChange","padj")]
+# up.reg.genes.authors.not.DE.for.us$From = rep("Authors", length(ID.up.reg.genes.authors.not.DE.for.us))
+# up.reg.genes.authors.not.DE.for.us$Status = rep("Up-regulated (Authors only)", length(ID.up.reg.genes.authors.not.DE.for.us))
 
-# logFC, padj, baseMean from us
-up.reg.genes.authors.not.DE.for.us.2 = dataf.DE.results.us[dataf.DE.results.us$GeneID %in% ID.up.reg.genes.authors.not.DE.for.us, 
-                                                                            c("GeneID","baseMean","log2FoldChange","padj")]
-up.reg.genes.authors.not.DE.for.us.2$From = rep("Us", length(ID.up.reg.genes.authors.not.DE.for.us))
-up.reg.genes.authors.not.DE.for.us.2$Status = rep("Up-regulated (Authors only)", length(ID.up.reg.genes.authors.not.DE.for.us))
+# # logFC, padj, baseMean from us
+# up.reg.genes.authors.not.DE.for.us.2 = dataf.DE.results.us[dataf.DE.results.us$GeneID %in% ID.up.reg.genes.authors.not.DE.for.us, 
+#                                                                             c("GeneID","baseMean","log2FoldChange","padj")]
+# up.reg.genes.authors.not.DE.for.us.2$From = rep("Us", length(ID.up.reg.genes.authors.not.DE.for.us))
+# up.reg.genes.authors.not.DE.for.us.2$Status = rep("Up-regulated (Authors only)", length(ID.up.reg.genes.authors.not.DE.for.us))
 
-### Up-regulated genes from us that aren't differentially expressed for authors
-# GenesID
-ID.up.reg.genes.us.not.DE.for.authors = DE.genes.set$GeneID[DE.genes.set$up.regulated.authors==0 &
-                                                              DE.genes.set$down.regulated.authors==0 &
-                                                              DE.genes.set$up.regulated.us == 1 &
-                                                              DE.genes.set$down.regulated.us == 0]
+# ### Up-regulated genes from us that aren't differentially expressed for authors
+# # GenesID
+# ID.up.reg.genes.us.not.DE.for.authors = DE.genes.set$GeneID[DE.genes.set$up.regulated.authors==0 &
+#                                                               DE.genes.set$down.regulated.authors==0 &
+#                                                               DE.genes.set$up.regulated.us == 1 &
+#                                                               DE.genes.set$down.regulated.us == 0]
 
-# logFC, padj, baseMean from us
-up.reg.genes.us.not.DE.for.authors = differentially_expressed_genes.us[differentially_expressed_genes.us$GeneID
-                                                                            %in% ID.up.reg.genes.us.not.DE.for.authors, 
-                                                                            c("GeneID","baseMean","log2FoldChange","padj")]
-up.reg.genes.us.not.DE.for.authors$From = rep("Us", length(ID.up.reg.genes.us.not.DE.for.authors))
-up.reg.genes.us.not.DE.for.authors$Status = rep("Up-regulated (Us only)", length(ID.up.reg.genes.us.not.DE.for.authors))
+# # logFC, padj, baseMean from us
+# up.reg.genes.us.not.DE.for.authors = differentially_expressed_genes.us[differentially_expressed_genes.us$GeneID
+#                                                                             %in% ID.up.reg.genes.us.not.DE.for.authors, 
+#                                                                             c("GeneID","baseMean","log2FoldChange","padj")]
+# up.reg.genes.us.not.DE.for.authors$From = rep("Us", length(ID.up.reg.genes.us.not.DE.for.authors))
+# up.reg.genes.us.not.DE.for.authors$Status = rep("Up-regulated (Us only)", length(ID.up.reg.genes.us.not.DE.for.authors))
 
-# logFC, padj, baseMean from authors
-up.reg.genes.us.not.DE.for.authors.2 = dataf.DE.results.authors[dataf.DE.results.authors$GeneID %in% ID.up.reg.genes.us.not.DE.for.authors, 
-                                                           c("GeneID","baseMean","log2FoldChange","padj")]
-up.reg.genes.us.not.DE.for.authors.2$From = rep("Authors", length(ID.up.reg.genes.us.not.DE.for.authors))
-up.reg.genes.us.not.DE.for.authors.2$Status = rep("Up-regulated (Us only)", length(ID.up.reg.genes.us.not.DE.for.authors))
-
-
-### Down-regulated genes from authors that aren't differentially expressed for us
-# GenesID
-ID.down.reg.genes.authors.not.DE.for.us = DE.genes.set$GeneID[DE.genes.set$up.regulated.authors==0 &
-                                                              DE.genes.set$down.regulated.authors==1 &
-                                                              DE.genes.set$up.regulated.us == 0 &
-                                                              DE.genes.set$down.regulated.us == 0]
-
-# logFC, padj, baseMean from authors
-down.reg.genes.authors.not.DE.for.us = differentially_expressed_genes.authors[differentially_expressed_genes.authors$GeneID
-                                                                            %in% ID.down.reg.genes.authors.not.DE.for.us, 
-                                                                            c("GeneID","baseMean","log2FoldChange","padj")]
-down.reg.genes.authors.not.DE.for.us$From = rep("Authors", length(ID.down.reg.genes.authors.not.DE.for.us))
-down.reg.genes.authors.not.DE.for.us$Status = rep("Down-regulated (Authors only)", length(ID.down.reg.genes.authors.not.DE.for.us))
-
-# logFC, padj, baseMean from us
-down.reg.genes.authors.not.DE.for.us.2 = dataf.DE.results.us[dataf.DE.results.us$GeneID %in% ID.down.reg.genes.authors.not.DE.for.us, 
-                                                           c("GeneID","baseMean","log2FoldChange","padj")]
-down.reg.genes.authors.not.DE.for.us.2$From = rep("Us", length(ID.down.reg.genes.authors.not.DE.for.us))
-down.reg.genes.authors.not.DE.for.us.2$Status = rep("Down-regulated (Authors only)", length(ID.down.reg.genes.authors.not.DE.for.us))
+# # logFC, padj, baseMean from authors
+# up.reg.genes.us.not.DE.for.authors.2 = dataf.DE.results.authors[dataf.DE.results.authors$GeneID %in% ID.up.reg.genes.us.not.DE.for.authors, 
+#                                                            c("GeneID","baseMean","log2FoldChange","padj")]
+# up.reg.genes.us.not.DE.for.authors.2$From = rep("Authors", length(ID.up.reg.genes.us.not.DE.for.authors))
+# up.reg.genes.us.not.DE.for.authors.2$Status = rep("Up-regulated (Us only)", length(ID.up.reg.genes.us.not.DE.for.authors))
 
 
-### Down-regulated genes from us that aren't differentially expressed for authors
-# GenesID
-ID.down.reg.genes.us.not.DE.for.authors = DE.genes.set$GeneID[DE.genes.set$up.regulated.authors==0 &
-                                                              DE.genes.set$down.regulated.authors==0 &
-                                                              DE.genes.set$up.regulated.us == 0 &
-                                                              DE.genes.set$down.regulated.us == 1]
+# ### Down-regulated genes from authors that aren't differentially expressed for us
+# # GenesID
+# ID.down.reg.genes.authors.not.DE.for.us = DE.genes.set$GeneID[DE.genes.set$up.regulated.authors==0 &
+#                                                               DE.genes.set$down.regulated.authors==1 &
+#                                                               DE.genes.set$up.regulated.us == 0 &
+#                                                               DE.genes.set$down.regulated.us == 0]
 
-# logFC, padj, baseMean from us
-down.reg.genes.us.not.DE.for.authors = differentially_expressed_genes.us[differentially_expressed_genes.us$GeneID
-                                                                       %in% ID.down.reg.genes.us.not.DE.for.authors, 
-                                                                       c("GeneID","baseMean","log2FoldChange","padj")]
-down.reg.genes.us.not.DE.for.authors$From = rep("Us", length(ID.down.reg.genes.us.not.DE.for.authors))
-down.reg.genes.us.not.DE.for.authors$Status = rep("Down-regulated (Us only)", length(ID.down.reg.genes.us.not.DE.for.authors))
+# # logFC, padj, baseMean from authors
+# down.reg.genes.authors.not.DE.for.us = differentially_expressed_genes.authors[differentially_expressed_genes.authors$GeneID
+#                                                                             %in% ID.down.reg.genes.authors.not.DE.for.us, 
+#                                                                             c("GeneID","baseMean","log2FoldChange","padj")]
+# down.reg.genes.authors.not.DE.for.us$From = rep("Authors", length(ID.down.reg.genes.authors.not.DE.for.us))
+# down.reg.genes.authors.not.DE.for.us$Status = rep("Down-regulated (Authors only)", length(ID.down.reg.genes.authors.not.DE.for.us))
 
-# logFC, padj, baseMean from authors
-down.reg.genes.us.not.DE.for.authors.2 = dataf.DE.results.authors[dataf.DE.results.authors$GeneID %in% ID.down.reg.genes.us.not.DE.for.authors, 
-                                                                c("GeneID","baseMean","log2FoldChange","padj")]
-down.reg.genes.us.not.DE.for.authors.2$From = rep("Authors", length(ID.down.reg.genes.us.not.DE.for.authors))
-down.reg.genes.us.not.DE.for.authors.2$Status = rep("Down-regulated (Us only)", length(ID.down.reg.genes.us.not.DE.for.authors))
-
-
-### Up-regulated genes from us that are down regulated for authors
-# GenesID
-ID.genes.up.us.down.authors = DE.genes.set$GeneID[DE.genes.set$up.regulated.authors==0 &
-                                                                DE.genes.set$down.regulated.authors==1 &
-                                                                DE.genes.set$up.regulated.us == 1 &
-                                                                DE.genes.set$down.regulated.us == 0]
-
-# logFC, padj, baseMean from us
-genes.up.us.down.authors = differentially_expressed_genes.us[differentially_expressed_genes.us$GeneID
-                                                                         %in% ID.genes.up.us.down.authors, 
-                                                                         c("GeneID","baseMean","log2FoldChange","padj")]
-genes.up.us.down.authors$From = rep("Us", length(ID.genes.up.us.down.authors))
-genes.up.us.down.authors$Status = rep("Up-regulated (Us) & Down-regulated (Authors)", length(ID.genes.up.us.down.authors))
-
-# logFC, padj, baseMean from authors
-genes.up.us.down.authors.2 = differentially_expressed_genes.authors[differentially_expressed_genes.authors$GeneID %in% ID.genes.up.us.down.authors, 
-                                                                  c("GeneID","baseMean","log2FoldChange","padj")]
-genes.up.us.down.authors.2$From = rep("Authors", length(ID.genes.up.us.down.authors))
-genes.up.us.down.authors.2$Status = rep("Up-regulated (Us) & Down-regulated (Authors)", length(ID.genes.up.us.down.authors))
+# # logFC, padj, baseMean from us
+# down.reg.genes.authors.not.DE.for.us.2 = dataf.DE.results.us[dataf.DE.results.us$GeneID %in% ID.down.reg.genes.authors.not.DE.for.us, 
+#                                                            c("GeneID","baseMean","log2FoldChange","padj")]
+# down.reg.genes.authors.not.DE.for.us.2$From = rep("Us", length(ID.down.reg.genes.authors.not.DE.for.us))
+# down.reg.genes.authors.not.DE.for.us.2$Status = rep("Down-regulated (Authors only)", length(ID.down.reg.genes.authors.not.DE.for.us))
 
 
-### Down-regulated genes from us that are Up-regulated for authors
-# GenesID
-ID.genes.down.us.up.authors = DE.genes.set$GeneID[DE.genes.set$up.regulated.authors==1 &
-                                                    DE.genes.set$down.regulated.authors==0 &
-                                                    DE.genes.set$up.regulated.us == 0 &
-                                                    DE.genes.set$down.regulated.us == 1]
+# ### Down-regulated genes from us that aren't differentially expressed for authors
+# # GenesID
+# ID.down.reg.genes.us.not.DE.for.authors = DE.genes.set$GeneID[DE.genes.set$up.regulated.authors==0 &
+#                                                               DE.genes.set$down.regulated.authors==0 &
+#                                                               DE.genes.set$up.regulated.us == 0 &
+#                                                               DE.genes.set$down.regulated.us == 1]
 
-# logFC, padj, baseMean from us
-genes.down.us.up.authors = differentially_expressed_genes.us[differentially_expressed_genes.us$GeneID
-                                                             %in% ID.genes.down.us.up.authors, 
-                                                             c("GeneID","baseMean","log2FoldChange","padj")]
-genes.down.us.up.authors$From = rep("Us", length(ID.genes.down.us.up.authors))
-genes.down.us.up.authors$Status = rep("Down-regulated (Us) & Up-regulated (Authors)", length(ID.genes.down.us.up.authors))
+# # logFC, padj, baseMean from us
+# down.reg.genes.us.not.DE.for.authors = differentially_expressed_genes.us[differentially_expressed_genes.us$GeneID
+#                                                                        %in% ID.down.reg.genes.us.not.DE.for.authors, 
+#                                                                        c("GeneID","baseMean","log2FoldChange","padj")]
+# down.reg.genes.us.not.DE.for.authors$From = rep("Us", length(ID.down.reg.genes.us.not.DE.for.authors))
+# down.reg.genes.us.not.DE.for.authors$Status = rep("Down-regulated (Us only)", length(ID.down.reg.genes.us.not.DE.for.authors))
 
-# logFC, padj, baseMean from authors
-genes.down.us.up.authors.2 = differentially_expressed_genes.authors[differentially_expressed_genes.authors$GeneID %in% ID.genes.down.us.up.authors, 
-                                                                    c("GeneID","baseMean","log2FoldChange","padj")]
-genes.down.us.up.authors.2$From = rep("Authors", length(ID.genes.up.us.down.authors))
-genes.down.us.up.authors.2$Status = rep("Down-regulated (Us) & Up-regulated (Authors)", length(ID.genes.down.us.up.authors))
-
-### Down-regulated genes from us that are Down-regulated for authors
-# GenesID
-ID.genes.down.us.down.authors = DE.genes.set$GeneID[DE.genes.set$up.regulated.authors==0 &
-                                                    DE.genes.set$down.regulated.authors==1 &
-                                                    DE.genes.set$up.regulated.us == 0 &
-                                                    DE.genes.set$down.regulated.us == 1]
-
-# logFC, padj, baseMean from us
-genes.down.us.down.authors = differentially_expressed_genes.us[differentially_expressed_genes.us$GeneID
-                                                             %in% ID.genes.down.us.down.authors, 
-                                                             c("GeneID","baseMean","log2FoldChange","padj")]
-genes.down.us.down.authors$From = rep("Us", length(ID.genes.down.us.down.authors))
-genes.down.us.down.authors$Status = rep("Down-regulated (Us & Authors)", length(ID.genes.down.us.down.authors))
-
-# logFC, padj, baseMean from authors
-genes.down.us.down.authors.2 = differentially_expressed_genes.authors[differentially_expressed_genes.authors$GeneID %in% ID.genes.down.us.down.authors, 
-                                                                    c("GeneID","baseMean","log2FoldChange","padj")]
-genes.down.us.down.authors.2$From = rep("Authors", length(ID.genes.down.us.down.authors))
-genes.down.us.down.authors.2$Status = rep("Down-regulated (Us & Authors)", length(ID.genes.down.us.down.authors))
+# # logFC, padj, baseMean from authors
+# down.reg.genes.us.not.DE.for.authors.2 = dataf.DE.results.authors[dataf.DE.results.authors$GeneID %in% ID.down.reg.genes.us.not.DE.for.authors, 
+#                                                                 c("GeneID","baseMean","log2FoldChange","padj")]
+# down.reg.genes.us.not.DE.for.authors.2$From = rep("Authors", length(ID.down.reg.genes.us.not.DE.for.authors))
+# down.reg.genes.us.not.DE.for.authors.2$Status = rep("Down-regulated (Us only)", length(ID.down.reg.genes.us.not.DE.for.authors))
 
 
-### Up-regulated genes from us that are Up-regulated for authors
-# GenesID
-ID.genes.up.us.up.authors = DE.genes.set$GeneID[DE.genes.set$up.regulated.authors==1 &
-                                                      DE.genes.set$down.regulated.authors==0 &
-                                                      DE.genes.set$up.regulated.us == 1 &
-                                                      DE.genes.set$down.regulated.us == 0]
+# ### Up-regulated genes from us that are down regulated for authors
+# # GenesID
+# ID.genes.up.us.down.authors = DE.genes.set$GeneID[DE.genes.set$up.regulated.authors==0 &
+#                                                                 DE.genes.set$down.regulated.authors==1 &
+#                                                                 DE.genes.set$up.regulated.us == 1 &
+#                                                                 DE.genes.set$down.regulated.us == 0]
 
-# logFC, padj, baseMean from us
-genes.up.us.up.authors = differentially_expressed_genes.us[differentially_expressed_genes.us$GeneID
-                                                               %in% ID.genes.up.us.up.authors, 
-                                                               c("GeneID","baseMean","log2FoldChange","padj")]
-genes.up.us.up.authors$From = rep("Us", length(ID.genes.up.us.up.authors))
-genes.up.us.up.authors$Status = rep("Up-regulated (Us & Authors)", length(ID.genes.up.us.up.authors))
+# # logFC, padj, baseMean from us
+# genes.up.us.down.authors = differentially_expressed_genes.us[differentially_expressed_genes.us$GeneID
+#                                                                          %in% ID.genes.up.us.down.authors, 
+#                                                                          c("GeneID","baseMean","log2FoldChange","padj")]
+# genes.up.us.down.authors$From = rep("Us", length(ID.genes.up.us.down.authors))
+# genes.up.us.down.authors$Status = rep("Up-regulated (Us) & Down-regulated (Authors)", length(ID.genes.up.us.down.authors))
 
-# logFC, padj, baseMean from authors
-genes.up.us.up.authors.2 = differentially_expressed_genes.authors[differentially_expressed_genes.authors$GeneID %in% ID.genes.up.us.up.authors, 
-                                                                      c("GeneID","baseMean","log2FoldChange","padj")]
-genes.up.us.up.authors.2$From = rep("Authors", length(ID.genes.up.us.up.authors))
-genes.up.us.up.authors.2$Status = rep("Up-regulated (Us & Authors)", length(ID.genes.up.us.up.authors))
+# # logFC, padj, baseMean from authors
+# genes.up.us.down.authors.2 = differentially_expressed_genes.authors[differentially_expressed_genes.authors$GeneID %in% ID.genes.up.us.down.authors, 
+#                                                                   c("GeneID","baseMean","log2FoldChange","padj")]
+# genes.up.us.down.authors.2$From = rep("Authors", length(ID.genes.up.us.down.authors))
+# genes.up.us.down.authors.2$Status = rep("Up-regulated (Us) & Down-regulated (Authors)", length(ID.genes.up.us.down.authors))
+
+
+# ### Down-regulated genes from us that are Up-regulated for authors
+# # GenesID
+# ID.genes.down.us.up.authors = DE.genes.set$GeneID[DE.genes.set$up.regulated.authors==1 &
+#                                                     DE.genes.set$down.regulated.authors==0 &
+#                                                     DE.genes.set$up.regulated.us == 0 &
+#                                                     DE.genes.set$down.regulated.us == 1]
+
+# # logFC, padj, baseMean from us
+# genes.down.us.up.authors = differentially_expressed_genes.us[differentially_expressed_genes.us$GeneID
+#                                                              %in% ID.genes.down.us.up.authors, 
+#                                                              c("GeneID","baseMean","log2FoldChange","padj")]
+# genes.down.us.up.authors$From = rep("Us", length(ID.genes.down.us.up.authors))
+# genes.down.us.up.authors$Status = rep("Down-regulated (Us) & Up-regulated (Authors)", length(ID.genes.down.us.up.authors))
+
+# # logFC, padj, baseMean from authors
+# genes.down.us.up.authors.2 = differentially_expressed_genes.authors[differentially_expressed_genes.authors$GeneID %in% ID.genes.down.us.up.authors, 
+#                                                                     c("GeneID","baseMean","log2FoldChange","padj")]
+# genes.down.us.up.authors.2$From = rep("Authors", length(ID.genes.up.us.down.authors))
+# genes.down.us.up.authors.2$Status = rep("Down-regulated (Us) & Up-regulated (Authors)", length(ID.genes.down.us.up.authors))
+
+# ### Down-regulated genes from us that are Down-regulated for authors
+# # GenesID
+# ID.genes.down.us.down.authors = DE.genes.set$GeneID[DE.genes.set$up.regulated.authors==0 &
+#                                                     DE.genes.set$down.regulated.authors==1 &
+#                                                     DE.genes.set$up.regulated.us == 0 &
+#                                                     DE.genes.set$down.regulated.us == 1]
+
+# # logFC, padj, baseMean from us
+# genes.down.us.down.authors = differentially_expressed_genes.us[differentially_expressed_genes.us$GeneID
+#                                                              %in% ID.genes.down.us.down.authors, 
+#                                                              c("GeneID","baseMean","log2FoldChange","padj")]
+# genes.down.us.down.authors$From = rep("Us", length(ID.genes.down.us.down.authors))
+# genes.down.us.down.authors$Status = rep("Down-regulated (Us & Authors)", length(ID.genes.down.us.down.authors))
+
+# # logFC, padj, baseMean from authors
+# genes.down.us.down.authors.2 = differentially_expressed_genes.authors[differentially_expressed_genes.authors$GeneID %in% ID.genes.down.us.down.authors, 
+#                                                                     c("GeneID","baseMean","log2FoldChange","padj")]
+# genes.down.us.down.authors.2$From = rep("Authors", length(ID.genes.down.us.down.authors))
+# genes.down.us.down.authors.2$Status = rep("Down-regulated (Us & Authors)", length(ID.genes.down.us.down.authors))
+
+
+# ### Up-regulated genes from us that are Up-regulated for authors
+# # GenesID
+# ID.genes.up.us.up.authors = DE.genes.set$GeneID[DE.genes.set$up.regulated.authors==1 &
+#                                                       DE.genes.set$down.regulated.authors==0 &
+#                                                       DE.genes.set$up.regulated.us == 1 &
+#                                                       DE.genes.set$down.regulated.us == 0]
+
+# # logFC, padj, baseMean from us
+# genes.up.us.up.authors = differentially_expressed_genes.us[differentially_expressed_genes.us$GeneID
+#                                                                %in% ID.genes.up.us.up.authors, 
+#                                                                c("GeneID","baseMean","log2FoldChange","padj")]
+# genes.up.us.up.authors$From = rep("Us", length(ID.genes.up.us.up.authors))
+# genes.up.us.up.authors$Status = rep("Up-regulated (Us & Authors)", length(ID.genes.up.us.up.authors))
+
+# # logFC, padj, baseMean from authors
+# genes.up.us.up.authors.2 = differentially_expressed_genes.authors[differentially_expressed_genes.authors$GeneID %in% ID.genes.up.us.up.authors, 
+#                                                                       c("GeneID","baseMean","log2FoldChange","padj")]
+# genes.up.us.up.authors.2$From = rep("Authors", length(ID.genes.up.us.up.authors))
+# genes.up.us.up.authors.2$Status = rep("Up-regulated (Us & Authors)", length(ID.genes.up.us.up.authors))
 
 
 
-#### Full comparison table
-DE.comparison.full.table = rbind(
-  up.reg.genes.authors.not.DE.for.us,
-  up.reg.genes.authors.not.DE.for.us.2,
+# #### Full comparison table
+# DE.comparison.full.table = rbind(
+#   up.reg.genes.authors.not.DE.for.us,
+#   up.reg.genes.authors.not.DE.for.us.2,
   
-  up.reg.genes.us.not.DE.for.authors,
-  up.reg.genes.us.not.DE.for.authors.2,
+#   up.reg.genes.us.not.DE.for.authors,
+#   up.reg.genes.us.not.DE.for.authors.2,
   
-  down.reg.genes.authors.not.DE.for.us,
-  down.reg.genes.authors.not.DE.for.us.2,
+#   down.reg.genes.authors.not.DE.for.us,
+#   down.reg.genes.authors.not.DE.for.us.2,
   
-  down.reg.genes.us.not.DE.for.authors,
-  down.reg.genes.us.not.DE.for.authors.2,
+#   down.reg.genes.us.not.DE.for.authors,
+#   down.reg.genes.us.not.DE.for.authors.2,
   
-  genes.up.us.down.authors,
-  genes.up.us.down.authors.2,
+#   genes.up.us.down.authors,
+#   genes.up.us.down.authors.2,
   
-  genes.down.us.up.authors,
-  genes.down.us.up.authors.2,
+#   genes.down.us.up.authors,
+#   genes.down.us.up.authors.2,
   
-  genes.down.us.down.authors,
-  genes.down.us.down.authors.2,
+#   genes.down.us.down.authors,
+#   genes.down.us.down.authors.2,
   
-  genes.up.us.up.authors,
-  genes.up.us.up.authors.2
-)
+#   genes.up.us.up.authors,
+#   genes.up.us.up.authors.2
+# )
 
-# Specifying the levels of Status
-DE.comparison.full.table$Status <- factor(
-  DE.comparison.full.table$Status,
-  levels = c(
-    "Up-regulated (Us only)",
-    "Up-regulated (Authors only)",
-    "Down-regulated (Us only)",
-    "Down-regulated (Authors only)",
-    "Up-regulated (Us & Authors)",
-    "Down-regulated (Us & Authors)",
-    "Up-regulated (Us) & Down-regulated (Authors)",
-    "Down-regulated (Us) & Up-regulated (Authors)"
-  )
-)
-
-
-############################ BOXPLOTS 
-
-# For log2FC
-f2 = ggplot(DE.comparison.full.table,
-       aes(x = Status, y = log2FoldChange, fill = From)) +
-  geom_boxplot(outlier.size = 0.5) +
-  coord_flip() +
-  labs(x = NULL,
-       y = expression(log[2]~"Fold change"),
-       fill = "From") +
-  theme_bw()
-
-ggsave(file.path(xargs$outputDir,"Boxplot_of_logFC_genes_set.png"), plot = f2, dpi = 600)
+# # Specifying the levels of Status
+# DE.comparison.full.table$Status <- factor(
+#   DE.comparison.full.table$Status,
+#   levels = c(
+#     "Up-regulated (Us only)",
+#     "Up-regulated (Authors only)",
+#     "Down-regulated (Us only)",
+#     "Down-regulated (Authors only)",
+#     "Up-regulated (Us & Authors)",
+#     "Down-regulated (Us & Authors)",
+#     "Up-regulated (Us) & Down-regulated (Authors)",
+#     "Down-regulated (Us) & Up-regulated (Authors)"
+#   )
+# )
 
 
-#For baseMean
-f3 = ggplot(DE.comparison.full.table,
-                 aes(x = Status, y = baseMean, fill = From)) +
-  geom_boxplot(outlier.size = 0.5) +
-  coord_flip() +
-  scale_y_log10(labels = trans_format("log10", math_format(10^.x))) +
-  labs(x = NULL,
-       y = "Mean of normalized counts",
-       fill = "From") +
-  theme_bw()
+# ############################ BOXPLOTS 
 
-ggsave(file.path(xargs$outputDir,"Boxplot_of_baseMeans_genes_set.png"), plot = f3, dpi = 600)
+# # For log2FC
+# f2 = ggplot(DE.comparison.full.table,
+#        aes(x = Status, y = log2FoldChange, fill = From)) +
+#   geom_boxplot(outlier.size = 0.5) +
+#   coord_flip() +
+#   labs(x = NULL,
+#        y = expression(log[2]~"Fold change"),
+#        fill = "From") +
+#   theme_bw()
 
-#For p-values
-f4 = ggplot(DE.comparison.full.table,
-            aes(x = Status, y = -log(padj, base = 10), fill = From)) +
-  geom_boxplot(outlier.size = 0.5) +
-  scale_y_log10(labels = trans_format("log10", math_format(10^.x))) +
-  coord_flip() +
-  labs(x = NULL,
-       y = expression(-log[10]~"(padj)"),
-       fill = "From") +
-  theme_bw()
+# ggsave(file.path(xargs$outputDir,"Boxplot_of_logFC_genes_set.png"), plot = f2, dpi = 600)
 
-ggsave(file.path(xargs$outputDir,"Boxplot_of_adjusted_pvalue_genes_set.png"), plot = f4, dpi = 600)
+
+# #For baseMean
+# f3 = ggplot(DE.comparison.full.table,
+#                  aes(x = Status, y = baseMean, fill = From)) +
+#   geom_boxplot(outlier.size = 0.5) +
+#   coord_flip() +
+#   scale_y_log10(labels = trans_format("log10", math_format(10^.x))) +
+#   labs(x = NULL,
+#        y = "Mean of normalized counts",
+#        fill = "From") +
+#   theme_bw()
+
+# ggsave(file.path(xargs$outputDir,"Boxplot_of_baseMeans_genes_set.png"), plot = f3, dpi = 600)
+
+# #For p-values
+# f4 = ggplot(DE.comparison.full.table,
+#             aes(x = Status, y = -log(padj, base = 10), fill = From)) +
+#   geom_boxplot(outlier.size = 0.5) +
+#   scale_y_log10(labels = trans_format("log10", math_format(10^.x))) +
+#   coord_flip() +
+#   labs(x = NULL,
+#        y = expression(-log[10]~"(padj)"),
+#        fill = "From") +
+#   theme_bw()
+
+# ggsave(file.path(xargs$outputDir,"Boxplot_of_adjusted_pvalue_genes_set.png"), plot = f4, dpi = 600)

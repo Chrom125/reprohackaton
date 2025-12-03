@@ -48,6 +48,8 @@ f1 = ggplot(dataf.DE.results, aes(x = baseMean , y = lfc2, color = signif))+
      scale_x_log10(labels = trans_format("log10", math_format(10^.x))) + #logarithmic scale on x-axis                                    
      scale_color_manual(values = c("Non-Significant" = "black",
                                 "Significant" = "red")) +
+     scale_fill_manual(values = c("Non-Significant" = "black",
+                                  "Significant" = "red")) +
      geom_hline(yintercept = 0, linetype = "dashed") +
      coord_cartesian(ylim = c(-4, 4))+
      labs(
@@ -157,9 +159,9 @@ f2 = ggplot(data = dataf.DE.results[filter_translation_genes,],
      theme(
       panel.border = element_rect(color = "black", linewidth = 2.5, fill = NA),
       
-      # Position the COLOR legend (Sig/Non-Sig) to the Bottom-Left (Inside)
+      # Putting the COLOR legend (Sig/Non-Sig) to the Bottom-Left (Inside)
       # Coordinates are relative (0 to 1)
-      legend.position = c(0.18, 0.15), 
+      legend.position = c(0.12, 0.06), 
       legend.background = element_blank(), # Remove white box background
       legend.key = element_blank()         # Remove box around dots
      ) +

@@ -3,7 +3,7 @@ From: rocker/r-base:4.4.2
 %post
     apt-get update
     apt-get install -y libcurl4-openssl-dev
-    R -e "install.packages('https://cran.r-project.org/src/contrib/pak_0.9.0.tar.gz', repos = NULL, type = 'source')"
+    R -e "install.packages('https://cran.r-project.org/src/contrib/Archive/pak/pak_0.9.0.tar.gz', repos = NULL, type = 'source')"
     R -e "library(pak)"
     R -e "pak::pkg_install('url::https://www.bioconductor.org/packages/release/bioc/src/contrib/KEGGREST_1.50.0.tar.gz')"
     R -e "pak::pkg_install('url::https://cran.r-project.org/src/contrib/argparse_2.3.1.tar.gz')"

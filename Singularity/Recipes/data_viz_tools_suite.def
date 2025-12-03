@@ -1,0 +1,27 @@
+Bootstrap: docker
+From: rocker/r-base:4.4.2
+%post
+    apt-get update
+    apt-get install -y libcurl4-openssl-dev
+    #library pak to manage dependencies specific to every R package
+    R -e "install.packages('https://cran.r-project.org/src/contrib/Archive/pak/pak_0.9.0.tar.gz', repos = NULL, type = 'source')"
+    R -e "library(pak)"
+
+    # argparse v2.3.1
+    R -e "pak::pkg_install('url::https://cran.r-project.org/src/contrib/argparse_2.3.1.tar.gz')"
+    # Bioconductor ComplexHeatmap v2.26.0 
+    R -e "pak::pkg_install('url::https://bioconductor.org/packages/release/bioc/src/contrib/ComplexHeatmap_2.26.0.tar.gz')"
+    # Bioconductor scales v1.4.0
+    R -e "pak::pkg_install('url::https://cran.r-project.org/src/contrib/scales_1.4.0.tar.gz')"
+    # ggplot2 v4.0.1
+    R -e "pak::pkg_install('url::https://cran.r-project.org/src/contrib/ggplot2_4.0.1.tar.gz')"
+    # patchwork v1.3.2
+    R -e "pak::pkg_install('url::https://cran.r-project.org/src/contrib/patchwork_1.3.2.tar.gz')"
+    # ragg v1.5.0
+    R -e "pak::pkg_install('url::https://cran.r-project.org/src/contrib/ragg_1.5.0.tar.gz')"
+    # ggrepel v0.9.6
+    R -e "pak::pkg_install('url::https://cran.r-project.org/src/contrib/ggrepel_0.9.6.tar.gz')"
+    # ggpubr v0.6.2
+    R -e "pak::pkg_install('url::https://cran.r-project.org/src/contrib/ggpubr_0.6.2.tar.gz')"
+%runscript
+    exec Rscript "$@"

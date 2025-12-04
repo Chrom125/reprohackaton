@@ -10,7 +10,7 @@ Ce projet vise à reproduire l'analyse bioinformatique de l'article : [Intracell
 
 L'article montre une différence d'expression des gènes de Staphylococcus aureus lorsque les bactéries sont dans un état de persistance, qui leur permet de résister aux antibiotiques. 
 
-L'analyse bioinformatique part des fichiers fasta/fastq obtenus du séquençage RNA‑seq des bactéries dans un état de persistance et dans un état de contrôle. Elle vise à obtenir une liste de gènes différemment exprimés dont certains sont réprimés et d'autres surexprimés, ainsi que plusieurs figures (MA‑plots, PCA, heatmaps, et les "upseq plots" fournis dans le Snakefile2). Le pipeline implémente les étapes classiques : contrôle qualité, trimming, alignement, comptage par gène puis analyse différentielle (ex. DESeq2) — les détails de chaque étape sont définis dans les Snakefiles.
+L'analyse bioinformatique part des fichiers fasta/fastq obtenus du séquençage RNA‑seq des bactéries dans un état de persistance et dans un état de contrôle. Elle vise à obtenir une liste de gènes différemment exprimés dont certains sont réprimés et d'autres surexprimés, ainsi que plusieurs figures (MA‑plots, PCA, et les "upseq plots" fournis dans le Snakefile2). Le pipeline implémente les étapes classiques : trimming, alignement, comptage par gène puis analyse différentielle (DESeq2) — les détails de chaque étape sont définis dans les Snakefiles.
 
 # Pre-requis :
 

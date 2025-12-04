@@ -4,7 +4,7 @@ configfile: "config2.yaml"
 rule all:
     input:
         ["results/comparison_with_authors/UpSet_plot_for_genes_sets.png", 
-        "results/comparison_with_authors/Authors-vs-Ours-counts-PLOT-DIFF.png",
+        "results/comparison_with_authors/Authors-vs-Us-counts-PLOT-DIFF.png",
          "results/comparison_with_authors/Boxplot_LFC_BaseMean_All_genes_and_DE_genes_Us_vs_Authors.png"]
 
 
@@ -45,7 +45,7 @@ rule comparison:
     output:
         ["results/comparison_with_authors/UpSet_plot_for_genes_sets.png",
          "results/comparison_with_authors/Boxplot_LFC_BaseMean_All_genes_and_DE_genes_Us_vs_Authors.png",
-         "results/comparison_with_authors/Authors-vs-Ours-counts-PLOT-DIFF.png"]
+         "results/comparison_with_authors/Authors-vs-Us-counts-PLOT-DIFF.png"]
     container:
         "https://zenodo.org/records/17798452/files/data_viz_tools_suite.sif?download=1"
     log:

@@ -38,6 +38,10 @@ snakemake -s Snakefile --dag | dot -Tpng -o dag.png
 
 Attention, les fichiers intermédiaires ne sont pas supprimés. Il faut prévoir assez de place pour les stocker.
 
+Le fichier snakefile2 permet de comparer les résultats avec les auteurs. Il permet notamment de tracer les upseq plots.
+
 '''
+
 snakemake -s Snakefile --use-singularity --singularity-args "--bind $(pwd)" --cores <number_of_cores>
+
 '''

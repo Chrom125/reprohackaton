@@ -14,6 +14,13 @@ rm ./apptainer_1.4.3_amd64.deb
 ```
 
 ## Snakemake :
+
+```
+sudo apt install snakemake
+```
+
+ou
+
 ```
 conda init
 conda install -c bioconda snakemake
@@ -28,6 +35,9 @@ snakemake -s Snakefile --dag | dot -Tpng -o dag.png
 ```
 
 # Lancer l'analyse :
+
+Attention, les fichiers intermédiaires ne sont pas supprimés. Il faut prévoir assez de place pour les stocker.
+
 '''
 snakemake -s Snakefile --use-singularity --singularity-args "--bind $(pwd)" --cores <number_of_cores>
 '''

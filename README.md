@@ -59,23 +59,25 @@ L'organisation des fichiers du projet est la suivante :
 ├── Snakefile         # Workflow Snakemake de reproduction des résultats de l'article
 ├── Snakefile2        # Workflow Snakemake pour la comparaison des résultats obtenus à ceux obtenus à partir de la table de comptage des auteurs
 └── README.md         # Documentation du projet
+```
 
-# Cloner le projet :
+# Protocole d'exécution du workflow
+## Cloner le projet
 ```
 git clone https://github.com/Chrom125/reprohackaton
 cd reprohackaton/
 ```
 
-# Pre-requis :
+## Préalables:
 
-## Apptainer :
+### Apptainer :
 ```
 wget https://github.com/apptainer/apptainer/releases/download/v1.4.3/apptainer_1.4.3_amd64.deb
 sudo apt install -y ./apptainer_1.4.3_amd64.deb
 rm ./apptainer_1.4.3_amd64.deb
 ```
 
-## Snakemake :
+### Snakemake :
 
 ```
 sudo apt install snakemake

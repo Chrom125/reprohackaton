@@ -9,7 +9,7 @@ Ce projet vise à reproduire l'analyse bioinformatique de l'article : [Intracell
 
 L'article porte sur l'identification des gènes différentiellement exprimés des bactéries de type ***Staphylococcus aureus*** lorsqu'elles deviennent persistantes à l'issue d'un contact avec des antibiotiques; la persistance leur conférant une tolérance à ceux-ci. Le but est ici de reprendre l'analyse d'expression différentielle qui compare les bactéries "Persister" et les bactéries "Control" en reproduisant deux MA plots, l'un à l'échelle de l'ensemble des gènes étudiés et l'autre restreint aux gènes de la traduction.  
 
-L'analyse bioinformatique réalisée a été conçue dans une optique de reproductibilité computationnelle, en utilisant un système de workflow **Snakemake** pour l'orchestration des différentes tâches et des conteneurs de type **Apptainer** pour l'encapsulation de chaque outil bioinformatique et en assurer la portabilité. 
+L'analyse bioinformatique a été réalisée en mettant l'accent sur la reproductibilité computationnelle, en utilisant un système de workflow **Snakemake** pour l'orchestration des différentes tâches et des conteneurs de type **Apptainer** pour l'encapsulation de chaque outil bioinformatique et afin d'en assurer la portabilité. 
 
 # Pipeline d'analyse
 
@@ -36,7 +36,7 @@ L'organisation des fichiers du projet est la suivante :
 .
 ├── Data/
 │   ├── GeneSpecificInformation_NCTC8325.xlsx    # Informations d'annotation des gènes
-│   └── metadata.tsv                             # Métadonnées et design expérimental : Correspondance entre les réplicats et leur label "Persister" ou "Control"
+│   └── metadata.tsv                             # Métadonnées : Correspondance entre les réplicats et leur label "Persister" ou "Control"
 │
 ├── Singularity/Recipes/             # Recettes pour la construction des conteneurs
 │   ├── bowtie-samtools.recipe                   # bowtie 0.12.7 et samtools 1.22.1
@@ -116,12 +116,11 @@ snakemake -s Snakefile --use-singularity --singularity-args "--bind $(pwd)" --co
 > Attention, les fichiers intermédiaires ne sont pas supprimés. Il faut prévoir un espace de stockage suffisant.
 
 
-### Worflow 2: comparaison des résultats obtenus précedemment à ceux issus d'une analyse différentielle à partir des somptages des auteurs 
+### Worflow 2: comparaison des résultats obtenus précedemment à ceux issus d'une analyse différentielle à partir des comptages des auteurs 
 Pour générer : 
 * Un **upset plot** représentant les intersections entre les gènes différentiellement exprimés obtenus à l'issue du workflow précédent et ceux provenant de l'analyse différentielle
 conduite à partir des comptages publiés par les auteurs
-* Des **boxplots** comparant les distributions des log2 Fold Change et des moyennes de comptages normalisés pour l'ensemble des gènes ainsi que les gènes différentiellement exprimés
-entre nos résultats d'analyse différentielle et ceux reproduits à partir de la table de comptages des auteurs.
+* Des **boxplots** comparant les distributions des log2 Fold Change et des moyennes de comptages normalisés pour l'ensemble des gènes ainsi que pour les gènes différentiellement exprimés entre nos résultats d'analyse différentielle et ceux reproduits à partir de la table de comptages des auteurs.
 
 ```
 snakemake -s Snakefile2 --use-singularity --singularity-args "--bind $(pwd)" --cores <number_of_cores>
@@ -129,7 +128,7 @@ snakemake -s Snakefile2 --use-singularity --singularity-args "--bind $(pwd)" --c
 > Attention, s'assurer d'avoir bien exécuté le workflow de reproduction des résultats d'analyse avant d'exécuter celui de comparaison
 
 
-### Worflow 3: Analyse de sensibilité : reproduction de l'analyse en utilisant bowtie2
+### Worflow 3: Analyse de sensibilité - reproduction de l'analyse en utilisant bowtie2
 
 **Si les workflow 1 et 2 ont déjà été exécutés, faire ceci au préalable** : 
 * Sauvegardez les résultats (figures, tableaux) dont vous aurez besoin
@@ -139,14 +138,19 @@ snakemake -s Snakefile2 --use-singularity --singularity-args "--bind $(pwd)" --c
   ```
 
 **Lancement de l'analyse d'expression différentielle incluant bowtie2 (via conda)**
+
 Dans le fichier **Snakefile**:
+
 * Commenter les rules **genome_index** et **mapping** 
 * Décommenter les rules **genome_index_bowtie2** et **mapping_bowtie2**
 * Enregistrez les modifications apportées au fichier **Snakefile**
 * Lancer la **reproduction de l'analyse différentielle** avec l'instruction suivante:
+  
    ```
       snakemake -s Snakefile --use-singularity --use-conda --singularity-args "--bind $(pwd)" --cores <number_of_cores>
    ```
+
+   
 **Comparaison des résultats d'analyse différentielle incluant bowtie2 à ceux obtenus à partir de la table de comptage des auteurs (incluant bowtie)**
    ```
       snakemake -s Snakefile2 --use-singularity --singularity-args "--bind $(pwd)" --cores <number_of_cores>

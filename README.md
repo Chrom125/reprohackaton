@@ -8,7 +8,21 @@ L'article porte sur l'identification des gènes différentiellement exprimés de
 
 L'analyse bioinformatique réalisée a été conçue dans une optique de reproductibilité computationnelle, en utilisant un système de workflow **Snakemake** pour l'orchestration des différentes tâches et des conteneurs de type **Apptainer** pour l'encapsulation de chaque outil bioinformatique et en assurer la portabilité. 
 
-Le pipeline d'analyse inclut: le trimming des reads issus du séquençage RNA‑seq des bactéries, le téléchargement et l'indexation du génome de référence, le mapping des reads sur le génome de référence, la génération d'une table de comptage, l'analyse d'expression différentielle via le package R DESeq2 avec construction de MA‑plots et volcano plot ainsi que la comparaison des résultats obtenus avec ceux issus de la table de comptage des auteurs (Upset plot et comparaison des distributions de log2FoldChange et de moyenne de comptages normalisés).
+# Pipeline d'analyse
+
+Le pipeline d'analyse automatisé couvre les étapes suivantes :
+
+* **Trimming des reads** issus du séquençage RNA‑seq bactérien (Nettoyage des données brutes).
+* **Préparation du génome de référence** : Téléchargement et indexation du génome de référence.
+* **Mapping** : Alignement des reads nettoyés sur le génome de référence.
+* **Quantification** : Génération de la table de comptage (*Count table*).
+* **Analyse d'expression différentielle** (via le package R **DESeq2**) incluant la génération de graphiques de diagnostic :
+    * MA‑plots
+    * Volcano plots
+* **Comparaison et vérification de la reproductibilité** des résultats par rapport à la table de comptage fournie par les auteurs :
+    * Visualisation des intersections (Upset plot).
+    * Comparaison des distributions de *log2FoldChange*.
+    * Comparaison des moyennes de comptages normalisés (*baseMean*).
 
 # Cloner le projet :
 ```

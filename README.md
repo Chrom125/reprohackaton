@@ -133,14 +133,24 @@ snakemake -s Snakefile2 --use-singularity --singularity-args "--bind $(pwd)" --c
 
 **Si les workflow 1 et 2 ont déjà été exécutés, faire ceci au préalable** : 
 * Sauvegardez les résultats (figures, tableaux) dont vous aurez besoin
-* Supprimez le répertoire results/mapping
+* Supprimez le répertoire ***results/mapping***
   ```
    rm -r results/mapping
   ```
 
-**Lancement de l'analyse d'expression différentielle avec bowtie2 (via conda)**
-```
-   rm -r results/mapping
-```
+**Lancement de l'analyse d'expression différentielle incluant bowtie2 (via conda)**
+Dans le fichier **Snakefile**:
+* Commenter les rules **genome_index** et **mapping** 
+* Décommenter les rules **genome_index_bowtie2** et **mapping_bowtie2**
+* Enregistrez les modifications apportées au fichier **Snakefile**
+* Lancer la **reproduction de l'analyse différentielle** avec l'instruction suivante:
+   ```
+      snakemake -s Snakefile --use-singularity --use-conda --singularity-args "--bind $(pwd)" --cores <number_of_cores>
+   ```
+**Comparaison des résultats d'analyse différentielle incluant bowtie2 à ceux obtenus à partir de la table de comptage des auteurs (incluant bowtie)**
+   ```
+      snakemake -s Snakefile2 --use-singularity --singularity-args "--bind $(pwd)" --cores <number_of_cores>
+   ```
+
 
 

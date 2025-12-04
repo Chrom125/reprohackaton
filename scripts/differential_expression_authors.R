@@ -6,7 +6,7 @@ library(DESeq2) # For differential expression analysis
 ################################################################################
 
 ##### Count table
-count_table = read.delim(file = "results/comparison_with_authors/authors_counts.xls", stringsAsFactors=TRUE)
+count_table = read.delim(file = "results/comparison_with_authors/authors_results.xls", stringsAsFactors=TRUE)
 count_table = count_table[1:2967,c(2,6:11)] #Selecting only gene counts columns
 colnames(count_table)[1] = "GeneID" #Renaming first column to GeneID
 rownames(count_table) = count_table$GeneID #Setting GeneID as rownames

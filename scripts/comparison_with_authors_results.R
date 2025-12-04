@@ -105,13 +105,13 @@ plot.diff.counts.1 = ggplot(df.plot, aes(x = sum_authors, y = diff)) +
   
   labs(
     x = "Authors counts per sample (in Millions)",
-    y = "Difference of counts Ours − Authors (in thousands)"
+    y = "Difference of counts Us − Authors (in thousands)"
   ) +
   
   theme_bw()
 
 ggsave(
-  file.path(xargs$outputDir,"Authors-vs-Ours-counts-PLOT-DIFF.png"),
+  file.path(xargs$outputDir,"Authors-vs-Us-counts-PLOT-DIFF.png"),
   plot = plot.diff.counts.1,
   width = 8,       
   height = 6,      

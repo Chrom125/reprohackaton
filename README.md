@@ -1,16 +1,20 @@
+
+
+# Description du projet
+
+Ce projet vise à reproduire l'analyse bioinformatique de l'article : [Intracellular Staphylococcus aureus persisters upon antibiotic exposure](https://www.nature.com/articles/s41467-020-15966-7) dans le cadre de l'unité d'enseignement Hackaton reproductibilité du Master (M2) de biologie computationnelle : AMI2B de l'Université Paris-Saclay.
+
+L'article porte sur l'identification des gènes différentiellement exprimés des bactéries de type ***Staphylococcus aureus*** lorsqu'elles deviennent persistantes à l'issue d'un contact avec des antibiotiques; la persistance leur conférant une tolérance à ceux-ci. Le but est ici de reprendre l'analyse d'expression différentielle qui compare les bactéries "Persister" et les bactéries "Control" en reproduisant deux MA plots, l'un à l'échelle de l'ensemble des gènes étudiés et l'autre restreint aux gènes de la traduction.  
+
+L'analyse bioinformatique réalisée a été conçue dans une optique de reproductibilité computationnelle, en utilisant un système de workflow **Snakemake** pour l'orchestration des différentes tâches et des conteneurs de type **Apptainer** pour l'encapsulation de chaque outil bioinformatique et en assurer la portabilité. 
+
+Le pipeline d'analyse inclut: le trimming des reads issus du séquençage RNA‑seq des bactéries, le téléchargement et l'indexation du génome de référence, le mapping des reads sur le génome de référence, la génération d'une table de comptage, l'analyse d'expression différentielle via le package R DESeq2 avec construction de MA‑plots et volcano plot ainsi que la comparaison des résultats obtenus avec ceux issus de la table de comptage des auteurs (Upset plot et comparaison des distributions de log2FoldChange et de moyenne de comptages normalisés).
+
 # Cloner le projet :
 ```
 git clone https://github.com/Chrom125/reprohackaton
 cd reprohackaton/
 ```
-
-# À propos du projet :
-
-Ce projet vise à reproduire l'analyse bioinformatique de l'article : [Intracellular Staphylococcus aureus persisters upon antibiotic exposure](https://www.nature.com/articles/s41467-020-15966-7). 
-
-L'article montre une différence d'expression des gènes de Staphylococcus aureus lorsque les bactéries sont dans un état de persistance, qui leur permet de résister aux antibiotiques. 
-
-L'analyse bioinformatique part des fichiers fasta/fastq obtenus du séquençage RNA‑seq des bactéries dans un état de persistance et dans un état de contrôle. Elle vise à obtenir une liste de gènes différemment exprimés dont certains sont réprimés et d'autres surexprimés, ainsi que plusieurs figures (MA‑plots, PCA, et les "upseq plots" fournis dans le Snakefile2). Le pipeline implémente les étapes classiques : trimming, alignement, comptage par gène puis analyse différentielle (DESeq2) — les détails de chaque étape sont définis dans les Snakefiles.
 
 # Pre-requis :
 

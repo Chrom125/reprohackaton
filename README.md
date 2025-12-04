@@ -1,8 +1,11 @@
 
+# Auteurs
+#### Julie FARES - Cherif SEDDIK - Ludovic SENEZ - Maurel Dylane TCHUISSE II
+
 
 # Description du projet
 
-Ce projet vise à reproduire l'analyse bioinformatique de l'article : [Intracellular Staphylococcus aureus persisters upon antibiotic exposure](https://www.nature.com/articles/s41467-020-15966-7) dans le cadre de l'unité d'enseignement Hackaton reproductibilité du Master (M2) de biologie computationnelle : AMI2B de l'Université Paris-Saclay.
+Ce projet vise à reproduire l'analyse bioinformatique de l'article : [Intracellular Staphylococcus aureus persisters upon antibiotic exposure](https://www.nature.com/articles/s41467-020-15966-7) dans le cadre de l'unité d'enseignement **Hackaton reproductible du Master (M2) de biologie computationnelle : AMI2B de l'Université Paris-Saclay**.
 
 L'article porte sur l'identification des gènes différentiellement exprimés des bactéries de type ***Staphylococcus aureus*** lorsqu'elles deviennent persistantes à l'issue d'un contact avec des antibiotiques; la persistance leur conférant une tolérance à ceux-ci. Le but est ici de reprendre l'analyse d'expression différentielle qui compare les bactéries "Persister" et les bactéries "Control" en reproduisant deux MA plots, l'un à l'échelle de l'ensemble des gènes étudiés et l'autre restreint aux gènes de la traduction.  
 

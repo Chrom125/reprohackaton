@@ -3,17 +3,18 @@ configfile: "config2.yaml"
 
 rule all:
     input:
-        ["results/comparison_with_authors/UpSet_plot_for_genes_sets.png",
+        ["results/comparison_with_authors/UpSet_plot_for_genes_sets.png", 
+        "results/comparison_with_authors/Authors-vs-Ours-counts-PLOT-DIFF.png",
          "results/comparison_with_authors/Boxplot_LFC_BaseMean_All_genes_and_DE_genes_Us_vs_Authors.png"]
 
 
 rule download_authors_counts:
     output:
-        "results/comparison_with_authors/authors_counts.xls"
+        "results/comparison_with_authors/authors_results.xls"
     log:
-        out = "logs/comparison_with_authors/download_authors_counts.log"
+        out = "logs/comparison_with_authors/download_authors_results.log"
     params:
-        archive = "results/comparison_with_authors/authors_counts.xls.gz"
+        archive = "results/comparison_with_authors/authors_results.xls.gz"
     shell:
         """
         wget -O "{params.archive}" "{config[download_authors_counts][link]}" 2> {log.out} \
@@ -23,7 +24,7 @@ rule download_authors_counts:
 
 rule DESeq2_analysis:
     input:
-        "results/comparison_with_authors/authors_counts.xls"
+        "results/comparison_with_authors/authors_results.xls"
     output:
         "results/comparison_with_authors/DESeq2_results_authors.tsv"
     container:
@@ -38,10 +39,13 @@ rule DESeq2_analysis:
 rule comparison:
     input:
         DESeq2_results_authors = "results/comparison_with_authors/DESeq2_results_authors.tsv",
-        DESeq2_results_us = "results/DESeq2_Analysis/DESeq2_results_all_genes.tsv"
+        DESeq2_results_us = "results/DESeq2_Analysis/DESeq2_results_all_genes.tsv",
+        authors_results = "results/comparison_with_authors/authors_results.xls",
+        ours_counts = "results/featurecounts/processed_counts.txt"
     output:
         ["results/comparison_with_authors/UpSet_plot_for_genes_sets.png",
-         "results/comparison_with_authors/Boxplot_LFC_BaseMean_All_genes_and_DE_genes_Us_vs_Authors.png"]
+         "results/comparison_with_authors/Boxplot_LFC_BaseMean_All_genes_and_DE_genes_Us_vs_Authors.png",
+         "results/comparison_with_authors/Authors-vs-Ours-counts-PLOT-DIFF.png"]
     container:
         "https://zenodo.org/records/17798452/files/data_viz_tools_suite.sif?download=1"
     log:
@@ -49,7 +53,9 @@ rule comparison:
     shell:
         """
         Rscript scripts/comparison_with_authors_results.R \
-        -aR "{input.DESeq2_results_authors}" \
+        -aR "{input.authors_results}" \
+        -aRD "{input.DESeq2_results_authors}" \
         -rR "{input.DESeq2_results_us}" \
+        -c "{input.ours_counts}" \
         -o "results/comparison_with_authors/" >{log.out} 2>&1
         """

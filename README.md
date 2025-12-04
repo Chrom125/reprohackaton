@@ -104,7 +104,7 @@ snakemake -s Snakefile --dag | dot -Tpng -o dag.png
 
 ## Lancement de l'analyse
 
-### Worflow : reproduction des résultats d'analyse différentielle de l'article
+### Worflow 1: reproduction des résultats d'analyse différentielle de l'article
 Pour reproduire l'analyse différentielle et générer les différents graphiques : 
 * **MA plots** pour l'ensemble des gènes, pour les gènes de traduction,
 * **volcano plot** pour l'ensemble des gènes,
@@ -116,7 +116,7 @@ snakemake -s Snakefile --use-singularity --singularity-args "--bind $(pwd)" --co
 > Attention, les fichiers intermédiaires ne sont pas supprimés. Il faut prévoir un espace de stockage suffisant.
 
 
-### Worflow : comparaison des résultats obtenus précedemment à ceux issus d'une analyse différentielle à partir des somptages des auteurs 
+### Worflow 2: comparaison des résultats obtenus précedemment à ceux issus d'une analyse différentielle à partir des somptages des auteurs 
 Pour générer : 
 * Un **upset plot** représentant les intersections entre les gènes différentiellement exprimés obtenus à l'issue du workflow précédent et ceux provenant de l'analyse différentielle
 conduite à partir des comptages publiés par les auteurs
@@ -128,25 +128,15 @@ snakemake -s Snakefile2 --use-singularity --singularity-args "--bind $(pwd)" --c
 ```
 > Attention, s'assurer d'avoir bien exécuté le workflow de reproduction des résultats d'analyse avant d'exécuter celui de comparaison
 
-# Description succincte des fichiers et dossiers
 
-- Snakefile  
-  Le pipeline principal Snakemake décrivant les étapes (QC, trimming, alignement, comptage, analyse différentielle, génération de figures). C'est le Snakefile à utiliser pour l'exécution standard.
+### Worflow 3: Analyse de sensibilité : reproduction de l'analyse en utilisant bowtie2
 
-- Snakefile2  
-  Variante du pipeline (utilisée pour comparer avec les auteurs ou tracer des figures supplémentaires comme les "upseq plots").
+**Si les workflow 1 et 2 ont déjà été exécutés, faire ceci au préalable** : 
+* Sauvegardez les résultats (figures, tableaux) dont vous aurez besoin
+* Supprimez le répertoire results/mapping
+  ```
+   rm -r results/mapping
+  ```
 
-- config.yaml  
-  Fichier de configuration contenant les paramètres.
+#### Sauvegarde des résultats nécessaires 
 
-- data/  
-  Contient des informations sur les gènes pour l'analyse.
-
-- results/  
-  Contient les sorties du pipeline : matrices de comptage, tables DESeq2, figures (MA‑plots, PCA, heatmaps, upseq plots), et listes de gènes différentiellement exprimés.
-
-- scripts/  
-  Scripts R et Python appelés par le Snakefile pour l'analyse différentielle et la génération de figures (p.ex. scripts/DESeq2.R, scripts/plot_* .R). Conserver ces scripts pour tracer la provenance des analyses.
-
-- README.md  
-  Ce fichier — informations d'usage et contexte du projet.

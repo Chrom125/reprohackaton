@@ -87,7 +87,7 @@ ggsave(file.path(xargs$outputDir,"Volcanoplot.png"), plot = volcano, dpi = 600)
 
 ##### MA plot for translation genes
 
-#===========> In KEGG database, S. aureus translation genes are grouped in 03 BRITE functional hierarchies
+#===========> In KEGG database, S. aureus translation genes are grouped in 04 BRITE functional hierarchies
 #===========>sao03011  Ribosome
 #===========>sao03009  Ribosome biogenesis
 #===========>sao03016  Transfer RNA biogenesis

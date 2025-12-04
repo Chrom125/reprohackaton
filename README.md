@@ -68,16 +68,16 @@ git clone https://github.com/Chrom125/reprohackaton
 cd reprohackaton/
 ```
 
-## Préalables:
+## Préalables
 
-### Apptainer :
+### Installer Apptainer
 ```
 wget https://github.com/apptainer/apptainer/releases/download/v1.4.3/apptainer_1.4.3_amd64.deb
 sudo apt install -y ./apptainer_1.4.3_amd64.deb
 rm ./apptainer_1.4.3_amd64.deb
 ```
 
-### Snakemake :
+### Installer Snakemake
 
 ```
 sudo apt install snakemake
@@ -92,13 +92,13 @@ conda activate
 exec bash -l
 ```
 
-# Générer le dag graphe :
+### Génération du dag
 ```
 sudo apt install graphviz
 snakemake -s Snakefile --dag | dot -Tpng -o dag.png
 ```
 
-# Lancer l'analyse :
+## Lancer l'analyse :
 
 Attention, les fichiers intermédiaires ne sont pas supprimés. Il faut prévoir assez de place pour les stocker.
 

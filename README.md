@@ -23,6 +23,42 @@ Le pipeline d'analyse automatisé couvre les étapes suivantes :
     * Visualisation des intersections (Upset plot).
     * Comparaison des distributions de *log2FoldChange*.
     * Comparaison des moyennes de comptages normalisés (*baseMean*).
+ 
+
+# Structure du projet
+
+L'organisation des fichiers du projet est la suivante :
+
+```text
+.
+├── Data/
+│   ├── GeneSpecificInformation_NCTC8325.xlsx    # Informations d'annotation des gènes
+│   └── metadata.tsv                             # Métadonnées et design expérimental : Correspondance entre les réplicats et leur label "Persister" ou "Control"
+│
+├── Singularity/Recipes/             # Recettes pour la construction des conteneurs
+│   ├── bowtie-samtools.recipe                   # bowtie 0.12.7 et samtools 1.22.1
+│   ├── cutadapt.recipe                          # cutadapt 1.11
+│   ├── data_viz_tools_suite.def                 # packages R de visualtion graphique
+│   ├── deseq.recipe                             # DESeq2 R package 1.16.1
+│   ├── feature-counts.def                       # subreads 1.4.6
+│   ├── keggrest.def                             # keggrest R package 1.50.0
+│   └── sratoolkit-fasterq-dump.def              # sratoolkit current version
+│
+├── envs/
+│   └── bowtie2.yaml                      # Environnement Conda pour bowtie2 2.5.4 et samtools 1.22.1
+│
+├── scripts/                               # Scripts R exécutés par le pipeline
+│   ├── KEGG_functional_annotation.R              # Interrogation de l'API REST de KEGG pour avoir les annotations fonctionnelles
+│   ├── comparison_with_authors_results.R         # Comparaison aux résultats obtenus de l'analyse différentielle à partir des comptages des auteurs (Upset plots, boxplots)
+│   ├── differential_expression.R                 # Reproduction de l'analyse différentielle
+│   ├── differential_expression_authors.R         # Analyse différentielle à partir de la table de comptage des auteurs
+│   └── plots_differential_expression_.results.R  # Génération des MA plots, volcano plot
+│
+├── config.yaml       # Fichier de configuration pour le pipeline de reproduction des résultats de l'article (Trimming, Mapping, Indextation, analyse différentielle, MA plots)
+├── config2.yaml      # Fichier de configuration pour le pipeline de comparaison des résultats à ceux obtenus avec la table de comptage des auteurs (Analyses R/Comparaisons)
+├── Snakefile         # Workflow Snakemake de reproduction des résultats de l'article
+├── Snakefile2        # Workflow Snakemake pour la comparaison des résultats obtenus à ceux obtenus à partir de la table de comptage des auteurs
+└── README.md         # Documentation du projet
 
 # Cloner le projet :
 ```

@@ -27,7 +27,7 @@ rule download_data:
     log:
         out = "logs/download_data/{sample}.log"
     container:
-        "https://zenodo.org/records/17423476/files/sratoolkit-fasterq-dump.sif?download=1"
+        "https://zenodo.org/records/17423176/files/sratoolkit-fasterq-dump.sif"
     params: 
         read_data = lambda wildcards : sample_to_sra_id[wildcards.sample]
     shell:
@@ -73,6 +73,11 @@ rule genome_annotation:
         wget -q -O {output} "{config[genome_annotation][annotation_url]}" 2>{log.out}
         """
 
+# ==============================================================================
+# BOWTIE OPTION (using Containers)
+# ==============================================================================
+
+
 rule genome_index:
     input:
         "results/Reference_Genome/reference.fasta"
@@ -104,6 +109,49 @@ rule mapping:
         bowtie -p {config[mapping][threads]} -S results/Reference_Genome/index_reference \
         {input.trimmed} 2>{log.mapping} | samtools sort -@ {config[mapping][threads]} >{output} 2>{log.sorting}
         """
+
+
+# ==============================================================================
+# BOWTIE 2 OPTION (Via Conda)
+# Uncomment this block (and comment out the two previous rules) to use Bowtie 2.
+# Rule names end with _bowtie2 for visual distinction.
+# ==============================================================================
+
+# rule genome_index_bowtie2:
+#     input:
+#         "results/Reference_Genome/reference.fasta"
+#     output:
+#         # Using "expand" logic as requested, adapted for Bowtie 2 extensions (.bt2)
+#         expand("results/Reference_Genome/index_reference.{i}.bt2", i=[1,2,3,4,"rev.1","rev.2"])
+#     log:
+#         out = "logs/Reference_Genome/reference_genome_index_bt2.out",
+#         err = "logs/Reference_Genome/reference_genome_index_bt2.err"
+#     conda:
+#         "envs/bowtie2.yaml"
+#     threads: 8
+#     shell:
+#         """
+#         bowtie2-build --threads {threads} {input} results/Reference_Genome/index_reference >{log.out} 2>{log.err}
+#         """
+
+# rule mapping_bowtie2:
+#     input:
+#         trimmed = "results/trimming/{sample}_trimmed.fastq",
+#         # Explicit dependency on the .bt2 index files generated above
+#         index_reference = expand("results/Reference_Genome/index_reference.{i}.bt2", i=[1,2,3,4,"rev.1","rev.2"])
+#     output:
+#         "results/mapping/{sample}_aligned.bam"  # Same output filename as the original rule
+#     log:
+#         mapping = "logs/mapping/bowtie2/{sample}_trimmed_mapping.log",
+#         sorting = "logs/mapping/samtools-sort/{sample}_aligned_sorting.log"
+#     conda:
+#         "envs/bowtie2.yaml"
+#     threads: 4 
+#     shell:
+#         """
+#         bowtie2 -p {threads} -x results/Reference_Genome/index_reference \
+#         -U {input.trimmed} 2>{log.mapping} | samtools sort -@ {threads} >{output} 2>{log.sorting}
+#         """
 
 rule featurecounts:
     input:

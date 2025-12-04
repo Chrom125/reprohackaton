@@ -4,7 +4,9 @@ library(argparse) # For argument parsing
 parser = ArgumentParser(description= "This script performs a comparison between authors's differential expression analysis results and ours by generating boxplots and an UpSet plot.")
 
 # Defining the arguments
-parser$add_argument('--authorsResults', '-aR', help= 'Path to authors DESeq2 results file', required= TRUE)
+parser$add_argument('--authorsResultsDESeq', '-aRD', help= 'Path to authors DESeq2 results file', required= TRUE)
+parser$add_argument('--authorsResults', '-aR', help= 'Path to authors published results', required= TRUE)
+parser$add_argument('--counts', '-c', help= 'Path to the reproduced counts', required= TRUE)
 parser$add_argument('--reproducedResults', '-rR', help= 'Path to the reproduced DESeq2 results file', required= TRUE)
 parser$add_argument('--outputDir', '-o', help= 'Path to the output directory', required= FALSE, default= './')
 
@@ -19,14 +21,114 @@ library(ComplexHeatmap) #Library for Upset plot drawing
 library(ragg) #Library to export plots
 library(patchwork) # For plot organization
 library(ggpubr) # For statistical comparisons in ggplot2
+library(ggrepel)# For better text label placement in ggplot2
+
+
+############################################## COMPARISON OF COUNTS ###############################################
+authors.results <- read.csv(xargs$authorsResults, sep = "\t", header = T)
+ours.counts <- read.table(xargs$counts, header = T)
+
+#Sum of counts per sample
+sum.authors <- colSums(
+  authors.results[, c("IP1","IP2","IP3","ctrl4","ctrl5","ctrl6")],
+  na.rm = TRUE
+)
+
+sum.ours <- colSums(
+  ours.counts[, c(
+    "persister_1","persister_2","persister_3",
+    "control_1","control_2","control_3"
+  )],
+  na.rm = TRUE
+)
+
+df.plot <- data.frame(
+  sum_authors = sum.authors,
+  sum_ours = sum.ours,
+  sample  = c("Persister 1", "Persister 2", "Persister 3",
+              "Control 1", "Control 2", "Control 3")
+)
+
+# Difference plot
+
+df.plot$diff <- df.plot$sum_ours - df.plot$sum_authors
+xmin <- min(df.plot$sum_authors, na.rm = TRUE)
+xmax <- max(df.plot$sum_authors, na.rm = TRUE)
+
+ymin <- min(df.plot$diff, na.rm = TRUE)
+ymax <- max(df.plot$diff, na.rm = TRUE)
+
+library(ggplot2)
+library(ggrepel)
+
+plot.diff.counts.1 = ggplot(df.plot, aes(x = sum_authors, y = diff)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  
+  geom_text_repel(
+    aes(label = sample),
+    size = 4,
+    color = "black",
+    nudge_y = 3000,     
+    box.padding = 0.6,
+    max.overlaps = Inf
+  ) +
+  
+  geom_text_repel(
+    aes(
+      label = paste0(
+        ifelse(diff > 0, "+", ""),
+        round(diff / 1000, 0), " K"
+      ),
+      color = ifelse(diff > 0, "positive", "negative")
+    ),
+    size = 3.5,
+    nudge_y = -3000,   
+    box.padding = 0.6,
+    max.overlaps = Inf,
+    show.legend = FALSE
+  ) +
+  
+  scale_color_manual(
+    values = c("positive" = "purple", "negative" = "red")
+  ) +
+  
+
+  scale_x_continuous(
+    labels = function(x) round(x / 1e6, 2)
+  ) +
+  
+
+  scale_y_continuous(
+    labels = function(x) round(x / 1000, 2)
+  ) +
+  
+  labs(
+    x = "Authors counts per sample (in Millions)",
+    y = "Difference of counts Ours − Authors (in thousands)"
+  ) +
+  
+  theme_bw()
+
+ggsave(
+  file.path(xargs$outputDir,"Authors-vs-Ours-counts-PLOT-DIFF.png"),
+  plot = plot.diff.counts.1,
+  width = 8,       
+  height = 6,      
+  units = "in",   
+  dpi = 300
+)
+
+
+############################################## COMPARISON OF DESEQ2 RESULTS #########################################
 
 ###### Collecting DESeq results for differentially expressed genes
 
 
 ###### Results from authors 
 
-#DE analysis results from the authors
-dataf.DE.results.authors = read.delim(xargs$authorsResults, stringsAsFactors=TRUE)
+#DE analysis results from authors
+dataf.DE.results.authors = read.delim(xargs$authorsResultsDESeq, stringsAsFactors=TRUE)
 
 #Differentially expressed genes
 padj.cutoff = 0.05

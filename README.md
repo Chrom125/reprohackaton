@@ -138,5 +138,9 @@ snakemake -s Snakefile2 --use-singularity --singularity-args "--bind $(pwd)" --c
    rm -r results/mapping
   ```
 
-#### Sauvegarde des résultats nécessaires 
+**Lancement de l'analyse d'expression différentielle avec bowtie2 (via conda)**
+```
+   rm -r results/mapping
+```
+
 

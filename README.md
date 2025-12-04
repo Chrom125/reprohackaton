@@ -56,7 +56,7 @@ L'organisation des fichiers du projet est la suivante :
 │
 ├── config.yaml       # Fichier de configuration pour le pipeline de reproduction des résultats de l'article (Trimming, Mapping, Indextation, analyse différentielle, MA plots)
 ├── config2.yaml      # Fichier de configuration pour le pipeline de comparaison des résultats à ceux obtenus avec la table de comptage des auteurs (Analyses R/Comparaisons)
-├── Snakefile         # Workflow Snakemake principal (reproduction des résultats de l'article)
+├── Snakefile         # Workflow Snakemake pour la reproduction des résultats de l'article
 ├── Snakefile2        # Workflow Snakemake pour la comparaison des résultats obtenus à ceux obtenus à partir de la table de comptage des auteurs
 └── README.md         # Documentation du projet
 ```
@@ -101,9 +101,9 @@ snakemake -s Snakefile --dag | dot -Tpng -o dag.png
 
 ## Lancement de l'analyse
 
-### Worflow principal
-Pour reproduire l'analyse différentielle et générer les différents graphiques (MA plots pour l'ensemble des gènes, pour les gènes de traduction, le volcano plot ainsi qu'un diagramme PCA
-pour le clustering des échantillons (Persister et Control) 
+### Worflow : reproduction des résultats d'analyse différentielle de l'article
+Pour reproduire l'analyse différentielle et générer les différents graphiques : **MA plots** pour l'ensemble des gènes, pour les gènes de traduction, **volcano plot** , **diagramme PCA**
+pour le clustering des échantillons (Persister et Control). 
 
 ```
 snakemake -s Snakefile --use-singularity --singularity-args "--bind $(pwd)" --cores <number_of_cores>
@@ -111,9 +111,13 @@ snakemake -s Snakefile --use-singularity --singularity-args "--bind $(pwd)" --co
 > Attention, les fichiers intermédiaires ne sont pas supprimés. Il faut prévoir un espace de stockage suffisant.
 
 
-
-### Worflow principal
-Le fichier snakefile2 permet de comparer les résultats avec les auteurs. Il permet notamment de tracer les upseq plots.
+### Worflow : comparaisons des résultats obtenus précedemment à ceux issus d'une analyse différentielle à partir des somptages des auteurs 
+Pour générer : un upset plot représentant les intersections entre les gènes différentiellement exprimés obtenus à l'issue du workflow précédent et ceux provenant de l'analyse différentielle
+conduite à partir des comptages publiés par les auteurs
+```
+snakemake -s Snakefile2 --use-singularity --singularity-args "--bind $(pwd)" --cores <number_of_cores>
+```
+> Attention, s'assurer d'avoir bien exécuté le workflow de reproduction des résultats d'analyse avant d'exécuter celui de comparaison
 
 # Description succincte des fichiers et dossiers
 
